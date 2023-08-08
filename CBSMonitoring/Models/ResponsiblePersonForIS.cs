@@ -2,7 +2,7 @@
 {
     public class ResponsiblePersonForIS : OrgMonitoring //2.5
     {
-        public bool IsResponsiblePersonAssigned { get; set; }
+        public bool? IsResponsiblePersonAssigned { get; set; }
         public string? FullNameOfRespPerSon { get; set; }
         public string? PositionOfRespPerson { get; set; }
         public string? TelNumOfRespPerson { get; set; }

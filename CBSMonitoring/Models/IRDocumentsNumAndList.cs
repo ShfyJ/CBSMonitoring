@@ -2,8 +2,7 @@
 {
     public class IRDocumentsNumAndList : OrgMonitoring  //1.2
     {
-        public int NumberOfRegDocs { get; set; }
-        #nullable disable
-        public string ListOfRegDocs { get; set; }
+        public int? NumberOfRegDocs { get; set; }
+        public string? ListOfRegDocs { get; set; }
     }
 }

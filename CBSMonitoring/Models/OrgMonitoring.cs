@@ -10,7 +10,7 @@ namespace CBSMonitoring.Models
         public int MonitoringId { get; set; }
         #nullable disable
         public int OrganizationId { get; set; }
-        [ForeignKey(nameof(MonitoringId))]
+        [ForeignKey(nameof(OrganizationId))]
         public Organization Organization { get; set; }
     }
 }

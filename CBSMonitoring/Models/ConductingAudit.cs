@@ -2,7 +2,7 @@
 {
     public class ConductingAudit : OrgMonitoring //2.10
     {
-        public bool IsObjectsAudited { get; set; }
+        public bool? IsObjectsAudited { get; set; }
         public string? AuditedObjectsNames { get; set; }
         public string? OrgNameMadeAudit { get; set; }
         public string? AuditPeriod { get; set; }

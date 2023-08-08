@@ -2,8 +2,7 @@
 {
     public class RegJournalsNumAndList : OrgMonitoring  //1.3
     {
-        public int NumberOfRegJournal { get; set; }
-        #nullable disable
-        public string ListOfRegJournal { get; set; }
+        public int? NumberOfRegJournal { get; set; }
+        public string? ListOfRegJournal { get; set; }
     }
 }

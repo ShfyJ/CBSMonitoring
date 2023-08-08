@@ -2,7 +2,7 @@
 {
     public class RegAccountingAndRespToIncidents : OrgMonitoring //2.12
     {
-        public bool IsLogsForIncidentsAvailable { get; set; } 
+        public bool? IsLogsForIncidentsAvailable { get; set; } 
         public int? NumberOfObjWithIncidentLog { get; set; }     
         public bool? IsDepISAndHeadNotified { get; set; }
         public bool? IsIncidentsInvestigated { get; set; }
