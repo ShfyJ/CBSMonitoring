@@ -10,7 +10,7 @@ namespace CBSMonitoring.Data
         {
             
         }
-
         public DbSet<OrgMonitoring> OrgMonitorings { get; set; }
+        public DbSet<ActionPlanToEnsureIC> ActionPlanToEnsureICs { get; set; }
     }
 }
