@@ -1,5 +1,4 @@
-﻿using CBSMonitoring.Controllers;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CBSMonitoring.Models
 {
