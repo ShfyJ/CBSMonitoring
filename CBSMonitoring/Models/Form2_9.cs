@@ -7,6 +7,6 @@
         public string? ExpertConclusionNumber { get; set; }
         public DateTime? ExpertConclusionDate { get; set; }
         public bool? HasShortcomings { get; set; }
-        public bool? IsShortcomingsEliminated { get; set; }  
+        public bool? IsShortcomingsOfWebsiteEliminated { get; set; }  
     }
 }

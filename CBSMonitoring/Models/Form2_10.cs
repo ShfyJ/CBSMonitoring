@@ -9,8 +9,7 @@
         public string? NumberOfAuditConc { get; set; }
         public DateTime? AuditConcDate { get; set; }
         public bool? IsShortcomingDetected { get; set; }
-        public bool? IsShortcomingsEliminated { get; set; }
-
+        public bool? IsShortcomingsOfObjecttEliminated { get; set; }
 
     }
 }
