@@ -6,6 +6,11 @@ namespace CBSMonitoring.Services
     public class ConcreteFormFactory : FormFactory
     {
         private readonly AppDbContext context;
+
+        public ConcreteFormFactory(AppDbContext context)
+        {
+            this.context= context;
+        }
         public override IMonitoringFactory GetMonitoringForm(string formNumber)
             => formNumber switch
             {
