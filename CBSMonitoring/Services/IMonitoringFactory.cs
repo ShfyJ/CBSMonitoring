@@ -1,14 +1,15 @@
 ﻿using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
+using ERPBlazor.Shared.Wrappers;
 
 namespace CBSMonitoring.Services
 {
     public interface IMonitoringFactory
     {
-        Task AddMonitoringReport(MonitoringDTO reportForm);
-        Task EditMonitoringReport(MonitoringDTO reportForm);
-        Task GetMonitoringReport(int id);
-        Task DeleteMonitoringReport(int id);
+        Task<Result<string>> AddMonitoringReport(MonitoringDTO reportForm);
+        Task<Result<string>> EditMonitoringReport(MonitoringDTO reportForm, int id);
+        Task<Result<MonitoringDTO>> GetMonitoringReport(int id);
+        Task<Result<string>> DeleteMonitoringReport(int id);
 
     }
 }

@@ -7,11 +7,12 @@ namespace CBSMonitoring.DTOs
         public int OrganizationId { get; set; }
         public int QuaterIndex { get; set; }
         public int Year { get; set; }
-        public List<FileModel>? Files { get; set; }
+        public List<FileItem>? Files { get; set; }
 
         /// <form>1.1</form>
         public bool? HasPolicy { get; set; }
         public bool? IsReviewedByCBS { get; set; }
+        public bool? AgreedWithAuthBody { get; set; }
         public int? NumberOfEmployees { get; set; }
         public float? PercentageOfEmpFamiliarWithPolicy { get; set; }
         public bool? IsAuditConducted { get; set; }
@@ -267,6 +268,15 @@ namespace CBSMonitoring.DTOs
         public string? NameOfProtectionTool { get; set; }
         public string? PurposeOfProtectionTool { get; set; }
         public int? NumberOfProtectionTool { get; set; }
+    }
+
+    public class FileItem
+    {
+        #nullable disable
+        public IFormFile File { get; set; }
+        public string DocNumber { get; set; }
+        public DateTime DocDate { get; set; }
+        public string Description { get; set; }
     }
 }
  

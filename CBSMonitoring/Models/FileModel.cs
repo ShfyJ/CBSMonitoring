@@ -14,6 +14,7 @@ namespace CBSMonitoring.Models
         public string FilePath { get; set; }
         public string SystemPath { get; set; }
         public string BasePath { get; set; }
+        public string ContentType { get; set; }
         #nullable enable
         public string? DocNumber { get; set; }
         public DateTime? DocDate { get; set; }

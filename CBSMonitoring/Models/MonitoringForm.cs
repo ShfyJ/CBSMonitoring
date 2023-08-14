@@ -10,7 +10,8 @@ namespace CBSMonitoring.Models
         [Required]
         public string FormNumber { get; set;}
         public bool IsActive { get; set; }
-        public ICollection<FormItem> FormItems { get; set; }
+        #nullable enable
+        public ICollection<FormItem>? FormItems { get; set; }
 
     }
 }

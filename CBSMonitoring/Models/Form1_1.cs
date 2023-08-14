@@ -4,6 +4,7 @@
     {
         public bool? HasPolicy { get; set; }
         public bool? IsReviewedByCBS { get; set; }
+        public bool? AgreedWithAuthBody { get; set; }
         public int? NumberOfEmployees { get; set; }
         public float? PercentageOfEmpFamiliarWithPolicy { get; set; }
         public bool? IsAuditConducted { get; set; }
