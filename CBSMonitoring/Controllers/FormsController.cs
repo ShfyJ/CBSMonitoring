@@ -12,9 +12,9 @@ namespace CBSMonitoring.Controllers
     public class FormsController : ControllerBase
     {
 
-        private readonly IFormService _formService;
+        private readonly IQuestionBlockService _formService;
 
-        public FormsController(IFormService formService)
+        public FormsController(IQuestionBlockService formService)
         {
             _formService = formService;
         }
@@ -23,7 +23,7 @@ namespace CBSMonitoring.Controllers
         [HttpGet("GetFormById/{id}")]
         public async Task<IActionResult> GetFormById(int id)
         {
-            var result = await _formService.GetForm(id);
+            var result = await _formService.GetQuestionBlock(id);
 
             if (!result.Succeeded)
             {
@@ -35,34 +35,43 @@ namespace CBSMonitoring.Controllers
 
         // POST api/<FormsController>
         [HttpPost("CreateForm")]
-        public async Task<IActionResult> CreateForm([FromForm] MonitoringFormDTO form)
+        public async Task<IActionResult> CreateForm([FromForm] MonitoringDTO form)
         {
-            if(!ModelState.IsValid) {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _formService.AddForm(form);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Messages);
-            }
-
-            else
-                return Ok(result);
+            throw new NotImplementedException();
         }
 
         // PUT api/<FormsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("UpdateForm")]
+        public async Task<IActionResult> UpdateForm([FromForm]MonitoringDTO form )
         {
+            //if(!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
+
+            //var result = await _formService.EditForm(form);
+
+            //if(!result.Succeeded)
+            //    return BadRequest(result.Messages);
+            //else
+            //    return Ok(result);
+            throw new NotImplementedException();
 
         }
 
         // DELETE api/<FormsController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("DeleteForm/{id}")]
+        public async Task<IActionResult> DeleteForm(int id)
         {
+            //var result = await _formService.DeleteForm(id);
+            //if (!result.Succeeded)
+            //    return BadRequest(result.Messages);
+
+            //else
+            //{
+            //    return Ok(result);
+            //}
+            throw new NotImplementedException();
         }
     }
 }

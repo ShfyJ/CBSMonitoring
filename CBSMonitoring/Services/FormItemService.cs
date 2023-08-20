@@ -19,12 +19,12 @@ namespace CBSMonitoring.Services
             {
                 IsActive = item.IsActive,
                 Order = item.Order,
-                ListIndex = item.ListIndex,
-                LinkedItemId = item.LinkedItemId,
+               
                 SelectOptions = item.SelectOptions,
                 ItemLabel = item.ItemLabel,
+                ItemName = item.ItemName,
                 ItemType = item.ItemType,
-                FormId = item.FormId
+                FormSectionId = item.FormId
             };
 
             try
@@ -75,7 +75,15 @@ namespace CBSMonitoring.Services
                 return await Result<string>.FailAsync($"item with id={item.ItemId} not found");
             }
 
-            _context.Update(item);
+            itemToUpdate.IsActive = item.IsActive;
+            itemToUpdate.Order = item.Order;            
+            itemToUpdate.SelectOptions = item.SelectOptions;
+            itemToUpdate.ItemLabel = item.ItemLabel;
+            itemToUpdate.ItemName = item.ItemName;
+            itemToUpdate.ItemType = item.ItemType;
+            itemToUpdate.FormSectionId = item.FormId;
+
+            _context.Update(itemToUpdate);
             await _context.SaveChangesAsync();
 
             return await Result<string>.SuccessAsync($"Success");
@@ -93,9 +101,10 @@ namespace CBSMonitoring.Services
 
         public async Task<Result<IEnumerable<FormItem>>> GetFormItemsByFormId(int formId)
         {
-            var items = await _context.FormItems.Where(i => i.FormId == formId).ToListAsync();
+            throw new NotImplementedException();
+            //var items = await _context.FormItems.Where(i => i.FormId == formId).ToListAsync();
 
-            return await Result<IEnumerable<FormItem>>.SuccessAsync(items);
+            //return await Result<IEnumerable<FormItem>>.SuccessAsync(items);
         }
     }
 }

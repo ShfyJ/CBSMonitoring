@@ -39,7 +39,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasKey("OrganizationId");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.FileModel", b =>
@@ -104,7 +104,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasIndex("Form2_4MonitoringId");
 
-                    b.ToTable("FileModels");
+                    b.ToTable("FileModels", (string)null);
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.FormItem", b =>
@@ -146,7 +146,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasIndex("FormId");
 
-                    b.ToTable("FormItems");
+                    b.ToTable("FormItems", (string)null);
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.MonitoringForm", b =>
@@ -157,6 +157,9 @@ namespace CBSMonitoring.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FormId"));
 
+                    b.Property<string>("FormName")
+                        .HasColumnType("text");
+
                     b.Property<string>("FormNumber")
                         .IsRequired()
                         .HasColumnType("text");
@@ -166,7 +169,10 @@ namespace CBSMonitoring.Migrations
 
                     b.HasKey("FormId");
 
-                    b.ToTable("MonitoringForms");
+                    b.HasIndex("FormNumber")
+                        .IsUnique();
+
+                    b.ToTable("MonitoringForms", (string)null);
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.OrgMonitoring", b =>
@@ -197,7 +203,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("OrgMonitorings");
+                    b.ToTable("OrgMonitorings", (string)null);
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("OrgMonitoring");
 
@@ -244,7 +250,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasIndex("Form2_8MonitoringId");
 
-                    b.ToTable("QIEmployees");
+                    b.ToTable("QIEmployees", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

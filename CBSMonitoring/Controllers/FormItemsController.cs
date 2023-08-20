@@ -16,17 +16,31 @@ namespace CBSMonitoring.Controllers
             _formItemService = formItemService;
         }
         // GET: api/<FormItemController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet("GetItemsByFormId/{formId}")]
+        public async Task<IActionResult> GetByFormId(int formId)
         {
-            return new string[] { "value1", "value2" };
+            var result = await _formItemService.GetFormItemsByFormId(formId);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Messages);
+            }
+
+            return Ok(result);
         }
 
         // GET api/<FormItemController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("GetItemById/{id}")]
+        public async Task<IActionResult> GetItemById(int id)
         {
-            return "value";
+            var result = await _formItemService.GetFormItem(id);
+
+            if(!result.Succeeded)
+            {
+                return BadRequest(result.Messages);
+            }
+
+            return Ok(result);
         }
 
         // POST api/<FormItemController>
@@ -48,15 +62,27 @@ namespace CBSMonitoring.Controllers
         }
 
         // PUT api/<FormItemController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("UpdateFormItem")]
+        public async Task<IActionResult> UpdateFormItem([FromForm] FormItemDTO item)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _formItemService.EditFormItem(item);
+            if(!result.Succeeded)
+                return BadRequest(result.Messages);
+            return Ok(result);
         }
 
         // DELETE api/<FormItemController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("DeleteFormItem/{id}")]
+        public async Task<IActionResult> DeleteFormItem(int id)
         {
+            var result = await _formItemService.DeleteFormItem(id);
+
+            if(!result.Succeeded)
+                return BadRequest(result.Messages); 
+            return Ok(result);
         }
     }
 }
