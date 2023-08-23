@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CBSMonitoring.DTOs
 {
-    public class QuestionBlockOutDTO
+    public class QuestionBlockResponse
     {
         public int BlockId { get; set; }
         #nullable disable

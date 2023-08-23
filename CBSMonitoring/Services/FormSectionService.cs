@@ -1,4 +1,5 @@
-﻿using CBSMonitoring.Data;
+﻿using AutoMapper;
+using CBSMonitoring.Data;
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
@@ -10,24 +11,20 @@ namespace CBSMonitoring.Services
 {
     public class FormSectionService : IFormSectionService
     {
-        private readonly IGenericRepository<FormSection> _fsRepository;
-        public FormSectionService(IGenericRepository<FormSection> fsRepository)
+        private readonly IGenericRepository _fsRepository;
+        private readonly IMapper _mapper;
+        public FormSectionService(IGenericRepository fsRepository, IMapper mapper)
         {
             _fsRepository = fsRepository;
+            _mapper = mapper;
         }
-        public async Task<Result<string>> AddFormSection(FormSectionInDTO section)
+        public async Task<Result<string>> AddFormSection(FormSectionRequest section)
         {
-            FormSection FormSection = new()
-            {
-                IsActive = section.IsActive,
-                SectionNumber = section.SectionNumber,
-                SectionName = section.SectionName,
-                QuestionBlockId = section.QuestionBlockId,
-            };
+            FormSection FormSection = _mapper.Map<FormSection>(section);
 
             try
             {
-                await _fsRepository.Add(FormSection);
+                await _fsRepository.AddAsync(FormSection);
             }
             catch (Exception ex)
             {
@@ -40,30 +37,27 @@ namespace CBSMonitoring.Services
 
         public async Task<Result<string>> DeleteFormSection(int id)
         {
-            var section = await _fsRepository.GetById(id);
+            var section = await _fsRepository.GetByIdAsync<FormSection>(id);
             if (section == null)
                 return await Result<string>.FailAsync($"form with id={id} not found");
 
-            await _fsRepository.Delete(section);
+            await _fsRepository.DeleteAsync(section);
 
             return await Result<string>.SuccessAsync($"success");
         }
 
-        public async Task<Result<string>> EditFormSection(FormSectionInDTO section, int id)
+        public async Task<Result<string>> EditFormSection(FormSectionRequest section, int id)
         {
-            var formSection = await _fsRepository.GetById(id);
+            var formSection = await _fsRepository.GetByIdAsync<FormSection>(id);
 
             if (formSection == null)
                 return await Result<string>.FailAsync($"Form with id={id} not found");
 
-            formSection.SectionNumber = section.SectionNumber;
-            formSection.SectionName = section.SectionName;
-            formSection.QuestionBlockId = section.QuestionBlockId;
-            formSection.IsActive = section.IsActive;
+            _mapper.Map(section, formSection);
 
             try
             {
-                await _fsRepository.Update(formSection);
+                await _fsRepository.UpdateAsync(formSection);
             }
             catch (Exception ex)
             {
@@ -73,42 +67,27 @@ namespace CBSMonitoring.Services
             return await Result<string>.SuccessAsync($"success");
         }
 
-        public async Task<Result<IEnumerable<FormSectionOutDTO>>> GetAllFormSectionsByQuestionBlockId(int questionBlockId)
+        public async Task<Result<IEnumerable<FormSectionResponse>>> GetAllFormSectionsByQuestionBlockId(int questionBlockId)
         {
-            var sections = await _fsRepository.GetAll();
+            var sections = await _fsRepository.GetAllAsync<FormSection>();
             sections = sections.Where(s => s.QuestionBlockId == questionBlockId);
-            List<FormSectionOutDTO> formSectionOutDTOs = new();
+            List<FormSectionResponse> fsResponseList = new();
             foreach (var section in sections)
             {
-                FormSectionOutDTO formSectionOutDTO = new()
-                {
-                    SectionId = section.SectionId,
-                    SectionName = section.SectionName,
-                    SectionNumber = section.SectionNumber,
-                    QuestionBlockId = questionBlockId
-                };
+                FormSectionResponse fsResponse = _mapper.Map<FormSectionResponse>(section);
 
-                formSectionOutDTOs.Add(formSectionOutDTO);
+                fsResponseList.Add(fsResponse);
             }
-            return await Result<IEnumerable<FormSectionOutDTO>>.SuccessAsync(formSectionOutDTOs);
+            return await Result<IEnumerable<FormSectionResponse>>.SuccessAsync(fsResponseList);
         }
 
-        public async Task<Result<FormSectionOutDTO>> GetFormSectionById(int id)
+        public async Task<Result<FormSectionResponse>> GetFormSectionById(int id)
         {
-            var section = await _fsRepository.GetById(id);
+            var section = await _fsRepository.GetByIdAsync<FormSection>(id);
             if (section == null)
-                return await Result<FormSectionOutDTO>.FailAsync($"Form with id={id} not found!");
+                return await Result<FormSectionResponse>.FailAsync($"Form with id={id} not found!");
 
-            FormSectionOutDTO formSectionOutDTO = new()
-            {
-                SectionId = section.SectionId,
-                SectionName = section.SectionName,
-                SectionNumber = section.SectionNumber,
-                IsActive = section.IsActive,
-                QuestionBlockId = section.QuestionBlockId
-            };
-
-            return await Result<FormSectionOutDTO>.SuccessAsync(formSectionOutDTO);
+            return await Result<FormSectionResponse>.SuccessAsync(_mapper.Map<FormSectionResponse>(section));
         }
     }
 }

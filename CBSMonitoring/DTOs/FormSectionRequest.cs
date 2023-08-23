@@ -2,7 +2,7 @@
 
 namespace CBSMonitoring.DTOs
 {
-    public class FormSectionInDTO
+    public class FormSectionRequest
     {
         #nullable disable
         public string SectionName { get; set; }

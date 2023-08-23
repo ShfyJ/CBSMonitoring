@@ -1,4 +1,5 @@
-﻿using CBSMonitoring.Data;
+﻿using AutoMapper;
+using CBSMonitoring.Data;
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
@@ -8,29 +9,20 @@ namespace CBSMonitoring.Services
 {
     public class FormItemService : IFormItemService
     {
-        private readonly AppDbContext _context;
-        public FormItemService(AppDbContext context)
+        private readonly IGenericRepository _genericRepository;
+        private readonly IMapper _mapper;
+        public FormItemService(IGenericRepository genericRepository, IMapper mapper)
         {
-           _context = context;
+           _genericRepository = genericRepository;
+           _mapper = mapper;
         }
         public async Task<Result<string>> AddFormItem(FormItemDTO item)
         {
-            FormItem formItem = new()
-            {
-                IsActive = item.IsActive,
-                Order = item.Order,
-               
-                SelectOptions = item.SelectOptions,
-                ItemLabel = item.ItemLabel,
-                ItemName = item.ItemName,
-                ItemType = item.ItemType,
-                FormSectionId = item.FormId
-            };
+            FormItem formItem = _mapper.Map<FormItem>(item);
 
             try
             {
-                await _context.AddAsync(formItem);
-                await _context.SaveChangesAsync();
+                await _genericRepository.AddAsync(formItem);
             }
 
             catch (Exception ex)
@@ -44,7 +36,7 @@ namespace CBSMonitoring.Services
 
         public async Task<Result<string>> DeleteFormItem(int id)
         {
-            var item = await _context.FormItems.FindAsync(id);
+            var item = await _genericRepository.GetByIdAsync<FormItem>(id);
             
             if(item == null)
             {
@@ -53,8 +45,7 @@ namespace CBSMonitoring.Services
 
             try
             {
-                _context.FormItems.Remove(item);
-                await _context.SaveChangesAsync();
+                await _genericRepository.DeleteAsync(item);
             }
             catch(Exception ex)
             {
@@ -66,32 +57,32 @@ namespace CBSMonitoring.Services
         }
                 
 
-        public async Task<Result<string>> EditFormItem(FormItemDTO item)
+        public async Task<Result<string>> EditFormItem(FormItemDTO item, int id)
         {
-            var itemToUpdate = await _context.FormItems.FindAsync(item.ItemId);
+            var itemToUpdate = await _genericRepository.GetByIdAsync<FormItem>(id);
 
             if(itemToUpdate == null )
             {
                 return await Result<string>.FailAsync($"item with id={item.ItemId} not found");
             }
 
-            itemToUpdate.IsActive = item.IsActive;
-            itemToUpdate.Order = item.Order;            
-            itemToUpdate.SelectOptions = item.SelectOptions;
-            itemToUpdate.ItemLabel = item.ItemLabel;
-            itemToUpdate.ItemName = item.ItemName;
-            itemToUpdate.ItemType = item.ItemType;
-            itemToUpdate.FormSectionId = item.FormId;
+            _mapper.Map(item, itemToUpdate);
 
-            _context.Update(itemToUpdate);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _genericRepository.UpdateAsync(itemToUpdate);
+            }
+            catch(Exception ex)
+            {
+                return await Result<string>.FailAsync(ex.Message);
+            }
 
             return await Result<string>.SuccessAsync($"Success");
         }
 
         public async Task<Result<FormItem>> GetFormItem(int id)
         {
-            var item = await _context.FormItems.FindAsync(id);
+            var item = await _genericRepository.GetByIdAsync<FormItem>(id);
 
             if (item == null)
                 return await Result<FormItem>.FailAsync($"item with id={id} not found");
@@ -99,12 +90,13 @@ namespace CBSMonitoring.Services
             return await Result<FormItem>.SuccessAsync(item);
         }
 
-        public async Task<Result<IEnumerable<FormItem>>> GetFormItemsByFormId(int formId)
+        public async Task<Result<IEnumerable<FormItem>>> GetFormItemsByFormSectionId(int formSectionId)
         {
-            throw new NotImplementedException();
-            //var items = await _context.FormItems.Where(i => i.FormId == formId).ToListAsync();
+            
+            var items = await _genericRepository.GetAllAsync<FormItem>();
+            items = items.Where(i => i.FormSectionId == formSectionId);
 
-            //return await Result<IEnumerable<FormItem>>.SuccessAsync(items);
+            return await Result<IEnumerable<FormItem>>.SuccessAsync(items);
         }
     }
 }

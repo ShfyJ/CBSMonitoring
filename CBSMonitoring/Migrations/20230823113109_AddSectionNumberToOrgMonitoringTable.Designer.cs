@@ -3,6 +3,7 @@ using System;
 using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CBSMonitoring.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230823113109_AddSectionNumberToOrgMonitoringTable")]
+    partial class AddSectionNumberToOrgMonitoringTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -651,23 +654,13 @@ namespace CBSMonitoring.Migrations
                     b.Property<bool?>("IsRelevantClausesAvailable")
                         .HasColumnType("boolean");
 
-                    b.HasDiscriminator().HasValue("Form1_5_2");
-                });
-
-            modelBuilder.Entity("CBSMonitoring.Models.Forms.Form1_5_3", b =>
-                {
-                    b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
-
-                    b.Property<bool?>("IsEmployeesFamWithAgreements")
-                        .HasColumnType("boolean");
-
                     b.Property<int?>("NumberOfEmplFamWithAgreements")
                         .HasColumnType("integer");
 
                     b.Property<float?>("PercentageOfEmpFamWithAgreements")
                         .HasColumnType("real");
 
-                    b.HasDiscriminator().HasValue("Form1_5_3");
+                    b.HasDiscriminator().HasValue("Form1_5_2");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.Forms.Form2_10_1", b =>

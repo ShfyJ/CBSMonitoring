@@ -11,6 +11,7 @@ namespace CBSMonitoring.DTOs
         public int Year { get; set; }
         public List<FileItem>? Files { get; set; }
         public int? FileId { get; set; }
+        public string? SectionNumber { get; set; }
 
         #region Forms
 
@@ -72,6 +73,8 @@ namespace CBSMonitoring.DTOs
         public bool? IsAgreementOnPrivacyAvailable { get; set; }
         /// <form>1.5.2</form>
         public bool? IsRelevantClausesAvailable { get; set; }
+        /// <form>1.5.3</form>
+        public bool? IsEmployeesFamWithAgreements { get; set; }
         public int? NumberOfEmplFamWithAgreements { get; set; }
         public float? PercentageOfEmpFamWithAgreements { get; set; }
         #endregion

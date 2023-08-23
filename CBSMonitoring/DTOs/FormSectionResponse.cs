@@ -1,6 +1,6 @@
 ﻿namespace CBSMonitoring.DTOs
 {
-    public class FormSectionOutDTO
+    public class FormSectionResponse
     {
         #nullable disable
         public int SectionId { get; set; }

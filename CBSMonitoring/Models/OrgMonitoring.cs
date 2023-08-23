@@ -14,6 +14,7 @@ namespace CBSMonitoring.Models
         public Organization Organization { get; set; }
         public int QuaterIndex { get; set; }
         public int Year { get; set; }
+        public string SectionNumber { get; set; }
         public DateTime CreatedDateTime { get; set; }
 
     }

@@ -1,43 +1,56 @@
 ﻿using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace CBSMonitoring.Services
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository : IGenericRepository
     {
         private readonly AppDbContext _context;
-
-        private DbSet<T> _dbSet;
+       
 
         public GenericRepository(AppDbContext context)
         {
             _context = context;
-            _dbSet = _context.Set<T>();
+           
         }
 
-        public async Task Add(T entity)
+        public async Task AddAsync<TEntity>(TEntity entity) where TEntity : class
         {
-            await _dbSet.AddAsync(entity);
+            await _context.Set<TEntity>().AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(T entity)
+        public async Task DeleteAsync<TEntity>(TEntity entity) where TEntity : class
         {
             _context.Remove(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>() where TEntity : class
         {
-            return await _dbSet.ToListAsync();
+            return await _context.Set<TEntity>().ToListAsync();
         }
 
-        public async Task<T?> GetById(int id)
+        public async Task<TEntity?> GetByIdAsync<TEntity>(int id) where TEntity : class
         {            
-            return await _dbSet.FindAsync(id);
+            return await _context.Set<TEntity>().FindAsync(id);
         }
 
-        public async Task Update(T entity)
+        public async Task<TEntity?> GetByParameterAsync<TEntity>(Expression<Func<TEntity, bool>> predicate, 
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TEntity : class
+        {
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return await query.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class
         {            
             _context.Update(entity);
             await _context.SaveChangesAsync();

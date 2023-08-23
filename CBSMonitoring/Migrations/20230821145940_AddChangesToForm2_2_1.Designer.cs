@@ -3,6 +3,7 @@ using System;
 using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CBSMonitoring.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230821145940_AddChangesToForm2_2_1")]
+    partial class AddChangesToForm2_2_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("DocDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DocNumber")
                         .HasColumnType("text");
@@ -162,7 +165,7 @@ namespace CBSMonitoring.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MonitoringId"));
 
                     b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
@@ -173,9 +176,6 @@ namespace CBSMonitoring.Migrations
 
                     b.Property<int>("QuaterIndex")
                         .HasColumnType("integer");
-
-                    b.Property<string>("SectionNumber")
-                        .HasColumnType("text");
 
                     b.Property<int>("Year")
                         .HasColumnType("integer");
@@ -581,7 +581,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime?>("ConfidentialDocDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ConfidentialDocNumber")
                         .HasColumnType("text");
@@ -597,7 +597,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime?>("ComissionDocDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ComissionDocNumber")
                         .HasColumnType("text");
@@ -616,7 +616,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("OfficialsDocDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("OfficialsDocNumber")
                         .HasColumnType("text");
@@ -651,23 +651,13 @@ namespace CBSMonitoring.Migrations
                     b.Property<bool?>("IsRelevantClausesAvailable")
                         .HasColumnType("boolean");
 
-                    b.HasDiscriminator().HasValue("Form1_5_2");
-                });
-
-            modelBuilder.Entity("CBSMonitoring.Models.Forms.Form1_5_3", b =>
-                {
-                    b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
-
-                    b.Property<bool?>("IsEmployeesFamWithAgreements")
-                        .HasColumnType("boolean");
-
                     b.Property<int?>("NumberOfEmplFamWithAgreements")
                         .HasColumnType("integer");
 
                     b.Property<float?>("PercentageOfEmpFamWithAgreements")
                         .HasColumnType("real");
 
-                    b.HasDiscriminator().HasValue("Form1_5_3");
+                    b.HasDiscriminator().HasValue("Form1_5_2");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.Forms.Form2_10_1", b =>
@@ -675,7 +665,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime?>("AuditConcDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("AuditPeriod")
                         .HasColumnType("text");
@@ -1002,7 +992,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime[]>("DeadlineOfPlan")
-                        .HasColumnType("timestamp without time zone[]");
+                        .HasColumnType("timestamp with time zone[]");
 
                     b.Property<bool[]>("DeadlineOfRealExec")
                         .HasColumnType("boolean[]");
@@ -1098,7 +1088,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime?>("ContractDateOfOutsoucingOrg")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ContractNumberOfOutsoucingOrg")
                         .HasColumnType("text");
@@ -1193,7 +1183,7 @@ namespace CBSMonitoring.Migrations
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
                     b.Property<DateTime?>("ExpertConclusionDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ExpertConclusionNumber")
                         .HasColumnType("text");

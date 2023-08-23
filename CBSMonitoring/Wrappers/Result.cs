@@ -69,9 +69,8 @@ namespace ERPBlazor.Shared.Wrappers
 
     public class Result<T> : Result, IResult<T>
     {
-        public Result()
-        {
-        }
+
+        public Result() { }
 
         public T Data { get; set; }
 

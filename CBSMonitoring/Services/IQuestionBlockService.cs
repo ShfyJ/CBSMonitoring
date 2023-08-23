@@ -5,10 +5,10 @@ namespace CBSMonitoring.Services
 {
     public interface IQuestionBlockService
     {
-        Task<Result<string>> AddQuestionBlock(QuestionBlockInDTO questionBlock);
+        Task<Result<string>> AddQuestionBlock(QuestionBlockRequest questionBlock);
         Task<Result<string>> RemoveQuestionBlock(int  questionBlockId);
-        Task<Result<string>> UpdateQuestionBlock(QuestionBlockInDTO questionBlock, int id);
-        Task<Result<QuestionBlockOutDTO>> GetQuestionBlock(int questionBlockId);
-        Task<Result<IEnumerable<QuestionBlockOutDTO>>> GetAllActiveQuestionBlocks();
+        Task<Result<string>> UpdateQuestionBlock(QuestionBlockRequest questionBlock, int id);
+        Task<Result<QuestionBlockResponse>> GetQuestionBlock(int questionBlockId);
+        Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(bool? status = null);
     }
 }

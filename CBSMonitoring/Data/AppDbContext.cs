@@ -36,6 +36,7 @@ namespace CBSMonitoring.Data
         public DbSet<Form1_4_4> Form1_4_4s { get; set; }
         public DbSet<Form1_5_1> Form1_5_1s { get; set; } //1.5
         public DbSet<Form1_5_2> Form1_5_2s { get; set; }
+        public DbSet<Form1_5_3> Form1_5_3s { get; set; }
         public DbSet<Form2_1_1> Form2_1_1s { get; set; }  //2.1
         public DbSet<Form2_1_1> Form2_1_2s { get; set; }
         public DbSet<Form2_2_1> Form2_2_1s { get; set; } //2.2

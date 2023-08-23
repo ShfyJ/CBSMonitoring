@@ -16,10 +16,10 @@ namespace CBSMonitoring.Controllers
             _formItemService = formItemService;
         }
         // GET: api/<FormItemController>
-        [HttpGet("GetItemsByFormId/{formId}")]
-        public async Task<IActionResult> GetByFormId(int formId)
+        [HttpGet("GetByFormSectionId/{id}")]
+        public async Task<IActionResult> GetByFormSectionId(int id)
         {
-            var result = await _formItemService.GetFormItemsByFormId(formId);
+            var result = await _formItemService.GetFormItemsByFormSectionId(id);
 
             if (!result.Succeeded)
             {
@@ -62,13 +62,13 @@ namespace CBSMonitoring.Controllers
         }
 
         // PUT api/<FormItemController>/5
-        [HttpPut("UpdateFormItem")]
-        public async Task<IActionResult> UpdateFormItem([FromForm] FormItemDTO item)
+        [HttpPut("UpdateFormItem/{id}")]
+        public async Task<IActionResult> UpdateFormItem([FromForm] FormItemDTO item, int id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _formItemService.EditFormItem(item);
+            var result = await _formItemService.EditFormItem(item, id);
             if(!result.Succeeded)
                 return BadRequest(result.Messages);
             return Ok(result);

@@ -2,7 +2,7 @@
 
 namespace CBSMonitoring.DTOs
 {
-    public class QuestionBlockInDTO
+    public class QuestionBlockRequest
     {
         #nullable disable
         [Required(ErrorMessage = "BlockNumber is must")]

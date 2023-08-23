@@ -1,11 +1,13 @@
-﻿namespace CBSMonitoring.Services
+﻿using System.Linq.Expressions;
+namespace CBSMonitoring.Services
 {
-    public interface IGenericRepository<T> where T : class
+    public interface IGenericRepository 
     {
-        Task Add(T entity);
-        Task<IEnumerable<T>> GetAll();
-        Task<T?> GetById(int id);
-        Task Update(T entity);
-        Task Delete(T entity);
+        Task AddAsync<TEntity>(TEntity entity) where TEntity : class;
+        Task<IEnumerable<TEntity>> GetAllAsync<TEntity>() where TEntity : class;
+        Task<TEntity?> GetByIdAsync<TEntity>(int id) where TEntity : class;
+        Task<TEntity?> GetByParameterAsync<TEntity>(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TEntity:class;
+        Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class;
+        Task DeleteAsync<TEntity>(TEntity entity) where TEntity : class;
     }
 }
