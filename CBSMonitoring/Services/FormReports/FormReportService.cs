@@ -41,17 +41,15 @@ namespace CBSMonitoring.Services.FormReports
             {
                 await _genericRepository.AddAsync(report);
 
-                if (reportForm.Files is null || !reportForm.Files.Any())
+                if (reportForm.FileItem is null)
                 {
                     return await Result<string>.SuccessAsync($"No file uploaded to form 1.1.1 report with id ={type.GetProperty("MonitoringId")?.GetValue(report, null)}");
                 }
 
-                foreach (var item in reportForm.Files)
-                {
-                    PropertyInfo monitoringIdProp = type.GetProperty(nameof(OrgMonitoring.MonitoringId))!;
-                    int monitoringId = Convert.ToInt32(monitoringIdProp.GetValue(report));
-                    await _fileWorkRoom.SaveFile(item, monitoringId);
-                }
+                PropertyInfo monitoringIdProp = type.GetProperty(nameof(OrgMonitoring.MonitoringId))!;
+                int monitoringId = Convert.ToInt32(monitoringIdProp.GetValue(report));
+                await _fileWorkRoom.SaveFile(reportForm.FileItem, monitoringId);
+
             }
 
             catch (Exception ex)

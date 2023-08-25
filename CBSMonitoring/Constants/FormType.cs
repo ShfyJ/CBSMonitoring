@@ -23,8 +23,10 @@
         public const string Form2_3_1 = "2.3.1";
         public const string Form2_3_2 = "2.3.2";
         public const string Form2_3_3 = "2.3.3";
+        public const string Form2_3_4 = "2.3.4";
         public const string Form2_4_1 = "2.4.1";
         public const string Form2_4_2 = "2.4.2";
+        public const string Form2_4_3 = "2.4.3";
         public const string Form2_5_1 = "2.5.1";
         public const string Form2_6_1 = "2.6.1";
         public const string Form2_7_1 = "2.7.1";

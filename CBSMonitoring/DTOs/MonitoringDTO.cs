@@ -9,7 +9,7 @@ namespace CBSMonitoring.DTOs
         public int OrganizationId { get; set; }
         public int QuaterIndex { get; set; }
         public int Year { get; set; }
-        public List<FileItem>? Files { get; set; }
+        public FileItem? FileItem { get; set; }
         public int? FileId { get; set; }
         public string? SectionNumber { get; set; }
 
@@ -111,20 +111,24 @@ namespace CBSMonitoring.DTOs
         public int? File_2_3_2Id { get; set; }
         /// <form>2.3.3</form>
         public bool? IsISystemAvailable { get; set; }
+        public string? NamesOfISystems { get; set; }
+        /// <form>2.3.4</form>
         public bool? IsISystemResourcesAvailable { get; set; }
+        public string? NamesOfSystemResources { get; set; }
         #endregion
 
         #region Form 2.4
         /// <form>2.4.1</form>
         public bool? IsISecDivisionPresent { get; set; }
         public string? ISsecDivisionName { get; set; }
+        /// <form>2.4.2</form>
         public bool? IsDevisionPositionPresent { get; set; }
         public string? SectionHeadFullName { get; set; }
         public string? PositionOfSectionHead { get; set; }
         public string? PhoneNumOfSectionHead { get; set; }
         public string? EmailOfSectionHead { get; set; }
         public int? NumberOfISEmployees { get; set; }
-        /// <form>2.4.2</form>
+        /// <form>2.4.3</form>
         public bool? IsOrganizationInvolvedInOutsourcingOfIS { get; set; }
         public string? NameOfOutSourcingOrg { get; set; }
         public string? ContractNumberOfOutsoucingOrg { get; set; }
@@ -402,9 +406,11 @@ namespace CBSMonitoring.DTOs
     {
         #nullable disable
         public IFormFile File { get; set; }
-        public string DocNumber { get; set; }
-        public DateTime DocDate { get; set; }
         public string Description { get; set; }
+        #nullable enable
+        public string? DocNumber { get; set; }
+        public DateTime? DocDate { get; set; }
+        
 
     }
 }

@@ -2,10 +2,11 @@
 {
     public class Form2_4_2 : OrgMonitoring
     {
-        public bool? IsOrganizationInvolvedInOutsourcingOfIS { get; set; }
-        public string? NameOfOutSourcingOrg { get; set; }
-        public string? ContractNumberOfOutsoucingOrg { get; set; }
-        public DateTime? ContractDateOfOutsoucingOrg { get; set; }
-        public string? ListOfServicesOfOutsourcingOrg { get; set; }
+        public bool? IsDevisionPositionPresent { get; set; }
+        public string? SectionHeadFullName { get; set; }
+        public string? PositionOfSectionHead { get; set; }
+        public string? PhoneNumOfSectionHead { get; set; }
+        public string? EmailOfSectionHead { get; set; }
+        public int? NumberOfISEmployees { get; set; }
     }
 }

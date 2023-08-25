@@ -4,6 +4,7 @@
     {
         public bool? IsProtectionToolAvailable { get; set; }
         public string? NameOfProtectionTool { get; set; }
+        public string? ProtectionToolType { get; set; }
         public string? PurposeOfProtectionTool { get; set; }
         public int? NumberOfProtectionTool { get; set; }
     }

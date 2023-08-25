@@ -20,6 +20,7 @@ namespace CBSMonitoring.Data
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<FileModel> FileModels { get; set; }
         public DbSet<QualificationImprovedEmployee> QIEmployees { get; set; }
+        public DbSet<FormItemType> FormItemTypes { get; set; }
         
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1
@@ -43,8 +44,10 @@ namespace CBSMonitoring.Data
         public DbSet<Form2_3_1> Form2_3_1s { get; set; }  //2.3
         public DbSet<Form2_3_2> Form2_3_2s { get; set; }
         public DbSet<Form2_3_3> Form2_3_3s { get; set; }
+        public DbSet<Form2_3_4> Form2_3_4s { get; set; }
         public DbSet<Form2_4_1> Form2_4_1s { get; set; } //2.4
         public DbSet<Form2_4_2> Form2_4_2s { get; set; }
+        public DbSet<Form2_4_3> Form2_4_3s { get; set; }
         public DbSet<Form2_5_1> Form2_5_1s { get; set; }  //2.5
         public DbSet<Form2_6_1> Form2_6_1s { get; set; } //2.6
         public DbSet<Form2_7_1> Form2_7_1s { get; set; }  //2.7

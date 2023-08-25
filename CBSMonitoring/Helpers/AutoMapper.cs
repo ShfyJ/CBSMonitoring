@@ -4,6 +4,7 @@ using CBSMonitoring.DTOs.FormDtos;
 using CBSMonitoring.Models;
 using CBSMonitoring.Models.Forms;
 using CBSMonitoring.Webframework;
+using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Helpers
 {
@@ -11,8 +12,12 @@ namespace CBSMonitoring.Helpers
     {
         public AutoMapper() 
         {
+            #region Form Item Type
+            CreateMap<FormItemTypeRequest, FormItemType>().ReverseMap();
+            #endregion
+
             #region Form Item
-            CreateMap<FormItemDTO, FormItem>().ReverseMap();
+            CreateMap<FormItemRequest, FormItem>().ReverseMap();
             #endregion
 
             #region Form Section

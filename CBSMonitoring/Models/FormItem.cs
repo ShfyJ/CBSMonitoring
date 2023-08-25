@@ -11,10 +11,15 @@ namespace CBSMonitoring.Models
         public bool IsMain { get; set; }
         public int Order { get; set; } = 0;
         public string[]? SelectOptions { get; set; } = null;
+        public bool IsListItem { get; set; } = false;
+        public int? ListIndex { get; set; }
+        public string? ListLabel { get; set; }
         #nullable disable
         public string ItemLabel { get; set; }
         public string ItemName { get; set; }
-        public string ItemType { get; set; }            //DateTime, file, select, int, float, text, bool      
+        public int ItemTypeId { get; set; }
+        [ForeignKey(nameof(ItemTypeId))]
+        public FormItemType FormItemType { get; set; }
         public int FormSectionId { get; set; }
         [ForeignKey(nameof(FormSectionId))]
         public FormSection FormSection { get; set; }

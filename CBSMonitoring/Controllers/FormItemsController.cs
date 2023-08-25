@@ -1,6 +1,7 @@
 ﻿using CBSMonitoring.DTOs;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
+using static CBSMonitoring.DTOs.Requests;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -45,7 +46,7 @@ namespace CBSMonitoring.Controllers
 
         // POST api/<FormItemController>
         [HttpPost("CreateFormItem")]
-        public async Task<IActionResult> CreateFormItem([FromBody] FormItemDTO item)
+        public async Task<IActionResult> CreateFormItem([FromForm] FormItemRequest item)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -63,7 +64,7 @@ namespace CBSMonitoring.Controllers
 
         // PUT api/<FormItemController>/5
         [HttpPut("UpdateFormItem/{id}")]
-        public async Task<IActionResult> UpdateFormItem([FromForm] FormItemDTO item, int id)
+        public async Task<IActionResult> UpdateFormItem([FromForm] FormItemRequest item, int id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

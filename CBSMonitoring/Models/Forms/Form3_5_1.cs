@@ -4,6 +4,7 @@
     {
         public bool? IsFirewallAvailable { get; set; }
         public string? NameAndVersionOfFirewall { get; set; }
+        public string? FirewallType { get; set; }
         public bool? IsLicenceForFireWallAvailable { get; set; }
 
     }

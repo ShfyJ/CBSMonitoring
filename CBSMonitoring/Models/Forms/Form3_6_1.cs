@@ -4,6 +4,7 @@
     {
         public bool? IsIDPSAvailable { get; set; }
         public string? NameAndVersionOfIDPS { get; set; }
+        public string? IDPSType { get; set; }
         public bool? IsLicenseForIDPSAvailable { get; set; }
     }
 }

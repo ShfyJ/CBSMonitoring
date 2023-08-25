@@ -3,6 +3,7 @@ using System;
 using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CBSMonitoring.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230824063800_AddParameterToForm2_14_1")]
+    partial class AddParameterToForm2_14_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,9 +99,6 @@ namespace CBSMonitoring.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsListItem")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsMain")
                         .HasColumnType("boolean");
 
@@ -108,13 +108,7 @@ namespace CBSMonitoring.Migrations
                     b.Property<string>("ItemName")
                         .HasColumnType("text");
 
-                    b.Property<int>("ItemTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ListIndex")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ListLabel")
+                    b.Property<string>("ItemType")
                         .HasColumnType("text");
 
                     b.Property<int>("Order")
@@ -127,32 +121,7 @@ namespace CBSMonitoring.Migrations
 
                     b.HasIndex("FormSectionId");
 
-                    b.HasIndex("ItemTypeId");
-
                     b.ToTable("FormItems");
-                });
-
-            modelBuilder.Entity("CBSMonitoring.Models.FormItemType", b =>
-                {
-                    b.Property<int>("TypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TypeId"));
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TypeDescription")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TypeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("TypeId");
-
-                    b.ToTable("FormItemTypes");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.FormSection", b =>
@@ -1309,9 +1278,6 @@ namespace CBSMonitoring.Migrations
                 {
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
-                    b.Property<string>("CAToolType")
-                        .HasColumnType("text");
-
                     b.Property<bool?>("IsCAndAnalysisToolAvailable")
                         .HasColumnType("boolean");
 
@@ -1339,9 +1305,6 @@ namespace CBSMonitoring.Migrations
 
                     b.Property<int?>("NumberOfProtectionTool")
                         .HasColumnType("integer");
-
-                    b.Property<string>("ProtectionToolType")
-                        .HasColumnType("text");
 
                     b.Property<string>("PurposeOfProtectionTool")
                         .HasColumnType("text");
@@ -1476,9 +1439,6 @@ namespace CBSMonitoring.Migrations
                 {
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
 
-                    b.Property<string>("FirewallType")
-                        .HasColumnType("text");
-
                     b.Property<bool?>("IsFirewallAvailable")
                         .HasColumnType("boolean");
 
@@ -1494,9 +1454,6 @@ namespace CBSMonitoring.Migrations
             modelBuilder.Entity("CBSMonitoring.Models.Forms.Form3_6_1", b =>
                 {
                     b.HasBaseType("CBSMonitoring.Models.OrgMonitoring");
-
-                    b.Property<string>("IDPSType")
-                        .HasColumnType("text");
 
                     b.Property<bool?>("IsIDPSAvailable")
                         .HasColumnType("boolean");
@@ -1556,14 +1513,6 @@ namespace CBSMonitoring.Migrations
                         .HasForeignKey("FormSectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("CBSMonitoring.Models.FormItemType", "FormItemType")
-                        .WithMany("FormItems")
-                        .HasForeignKey("ItemTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FormItemType");
 
                     b.Navigation("FormSection");
                 });
@@ -1708,11 +1657,6 @@ namespace CBSMonitoring.Migrations
                         .HasForeignKey("File_2_3_2Id");
 
                     b.Navigation("FileModel");
-                });
-
-            modelBuilder.Entity("CBSMonitoring.Models.FormItemType", b =>
-                {
-                    b.Navigation("FormItems");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.FormSection", b =>

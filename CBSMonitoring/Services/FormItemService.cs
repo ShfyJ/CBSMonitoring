@@ -4,6 +4,7 @@ using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
 using Microsoft.EntityFrameworkCore;
+using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Services
 {
@@ -16,7 +17,7 @@ namespace CBSMonitoring.Services
            _genericRepository = genericRepository;
            _mapper = mapper;
         }
-        public async Task<Result<string>> AddFormItem(FormItemDTO item)
+        public async Task<Result<string>> AddFormItem(FormItemRequest item)
         {
             FormItem formItem = _mapper.Map<FormItem>(item);
 
@@ -57,13 +58,13 @@ namespace CBSMonitoring.Services
         }
                 
 
-        public async Task<Result<string>> EditFormItem(FormItemDTO item, int id)
+        public async Task<Result<string>> EditFormItem(FormItemRequest item, int id)
         {
             var itemToUpdate = await _genericRepository.GetByIdAsync<FormItem>(id);
 
             if(itemToUpdate == null )
             {
-                return await Result<string>.FailAsync($"item with id={item.ItemId} not found");
+                return await Result<string>.FailAsync($"item with id={id} not found");
             }
 
             _mapper.Map(item, itemToUpdate);
