@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CBSMonitoring.Models;
 using CBSMonitoring.Services;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using static CBSMonitoring.DTOs.Requests;
 
@@ -43,11 +42,11 @@ namespace CBSMonitoring.Controllers
             {
                 await _genericRepository.AddAsync(itemType);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-            
+
             return Ok("Success");
         }
 

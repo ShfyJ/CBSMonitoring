@@ -22,7 +22,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _fsService.GetFormSectionById(id);
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Messages);
             }
@@ -36,7 +36,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _fsService.GetAllFormSectionsByQuestionBlockId(id);
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Messages);
             }
@@ -48,13 +48,13 @@ namespace CBSMonitoring.Controllers
         [HttpPost("CreateFormSection")]
         public async Task<IActionResult> CreateFormSection([FromForm] FormSectionRequest fs)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             var result = await _fsService.AddFormSection(fs);
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Messages);
             }

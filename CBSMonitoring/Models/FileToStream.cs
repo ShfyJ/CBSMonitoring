@@ -2,7 +2,7 @@
 {
     public class FileToStream
     {
-        #nullable disable
+#nullable disable
         public Stream Memory { get; set; }
         public string ContentType { get; set; }
         public string FileName { get; set; }

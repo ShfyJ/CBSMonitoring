@@ -6,7 +6,7 @@ namespace CBSMonitoring.Models
     {
         [Key]
         public int TypeId { get; set; }
-        #nullable disable
+#nullable disable
         [Required]
         public string TypeName { get; set; }
         public string TypeDescription { get; set; }

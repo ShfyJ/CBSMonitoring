@@ -2,6 +2,6 @@
 {
     public class Form1_5_2 : OrgMonitoring
     {
-        public bool? IsRelevantClausesAvailable { get; set; }        
+        public bool? IsRelevantClausesAvailable { get; set; }
     }
 }

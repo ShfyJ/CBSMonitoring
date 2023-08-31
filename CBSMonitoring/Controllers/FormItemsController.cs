@@ -1,5 +1,4 @@
-﻿using CBSMonitoring.DTOs;
-using CBSMonitoring.Services;
+﻿using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
 using static CBSMonitoring.DTOs.Requests;
 
@@ -36,7 +35,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _formItemService.GetFormItem(id);
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Messages);
             }
@@ -53,7 +52,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _formItemService.AddFormItem(item);
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Messages);
             }
@@ -70,7 +69,7 @@ namespace CBSMonitoring.Controllers
                 return BadRequest(ModelState);
 
             var result = await _formItemService.EditFormItem(item, id);
-            if(!result.Succeeded)
+            if (!result.Succeeded)
                 return BadRequest(result.Messages);
             return Ok(result);
         }
@@ -81,8 +80,8 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _formItemService.DeleteFormItem(id);
 
-            if(!result.Succeeded)
-                return BadRequest(result.Messages); 
+            if (!result.Succeeded)
+                return BadRequest(result.Messages);
             return Ok(result);
         }
     }

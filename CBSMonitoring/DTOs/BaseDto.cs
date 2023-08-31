@@ -21,16 +21,16 @@ namespace CBSMonitoring.DTOs
             return entity.Adapt<TDto>();
         }
 
-        #nullable disable
+#nullable disable
         private TypeAdapterConfig Config { get; set; }
-        public virtual void AddCustomMappings() {}
-        protected TypeAdapterSetter<TDto, TEntity> SetCustomMappings() 
+        public virtual void AddCustomMappings() { }
+        protected TypeAdapterSetter<TDto, TEntity> SetCustomMappings()
             => Config.ForType<TDto, TEntity>();
 
         protected TypeAdapterSetter<TEntity, TDto> SetCustomMappingsInverse()
             => Config.ForType<TEntity, TDto>();
 
-        public void Register(TypeAdapterConfig config) 
+        public void Register(TypeAdapterConfig config)
         {
             Config = config;
             AddCustomMappings();

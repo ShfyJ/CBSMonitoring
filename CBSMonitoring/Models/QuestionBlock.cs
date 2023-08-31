@@ -8,14 +8,14 @@ namespace CBSMonitoring.Models
     {
         [Key]
         public int BlockId { get; set; }
-        #nullable disable
+#nullable disable
         [Required(ErrorMessage = "BlockNumber is must")]
-        public string BlockNumber { get; set;}
+        public string BlockNumber { get; set; }
         [Required(ErrorMessage = "BlockName is must")]
-        public string BlockName { get; set;}
+        public string BlockName { get; set; }
         [Required(ErrorMessage = "|IsActive is must")]
         public bool IsActive { get; set; }
-        #nullable enable
+#nullable enable
         public ICollection<FormSection>? FormSections { get; set; }
 
     }

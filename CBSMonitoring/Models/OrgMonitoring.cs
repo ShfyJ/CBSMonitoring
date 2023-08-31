@@ -12,7 +12,7 @@ namespace CBSMonitoring.Models
         public int OrganizationId { get; set; }
         [ForeignKey(nameof(OrganizationId))]
         public Organization Organization { get; set; }
-        public int QuaterIndex { get; set; }
+        public int QuarterIndex { get; set; }
         public int Year { get; set; }
         public string SectionNumber { get; set; }
         public DateTime CreatedDateTime { get; set; }

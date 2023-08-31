@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using CBSMonitoring.Data;
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace CBSMonitoring.Services
 {
@@ -39,14 +36,14 @@ namespace CBSMonitoring.Services
             try
             {
                 var questionBlocks = await _qbRepository.GetAllAsync<QuestionBlock>();
-                if(isActive is not null)
+                if (isActive is not null)
                 {
                     questionBlocks = questionBlocks.Where(q => q.IsActive).ToList();
                 }
-                
+
                 List<QuestionBlockResponse> qbDTOs = new();
 
-                foreach(var questionBlock in questionBlocks)
+                foreach (var questionBlock in questionBlocks)
                 {
                     QuestionBlockResponse questionBlockResponse = _mapper.Map<QuestionBlockResponse>(questionBlock);
 
@@ -55,8 +52,8 @@ namespace CBSMonitoring.Services
 
                 return await Result<IEnumerable<QuestionBlockResponse>>.SuccessAsync(qbDTOs);
             }
-            
-            catch(Exception ex)
+
+            catch (Exception ex)
             {
                 return await Result<IEnumerable<QuestionBlockResponse>>.FailAsync(ex.Message);
             }
@@ -83,7 +80,7 @@ namespace CBSMonitoring.Services
                 await _qbRepository.DeleteAsync(questionBlock);
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return await Result<string>.FailAsync(ex.Message);
             }
@@ -99,7 +96,7 @@ namespace CBSMonitoring.Services
                 return await Result<string>.FailAsync($"Question block with id={id} not found");
 
             _mapper.Map(questionBlock, qb);
-            
+
             await _qbRepository.UpdateAsync(qb);
 
             return await Result<string>.SuccessAsync($"Success");

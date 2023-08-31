@@ -7,12 +7,12 @@ namespace CBSMonitoring.Services
     public class GenericRepository : IGenericRepository
     {
         private readonly AppDbContext _context;
-       
+
 
         public GenericRepository(AppDbContext context)
         {
             _context = context;
-           
+
         }
 
         public async Task AddAsync<TEntity>(TEntity entity) where TEntity : class
@@ -27,17 +27,23 @@ namespace CBSMonitoring.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>() where TEntity : class
+        public async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TEntity : class
         {
-            return await _context.Set<TEntity>().ToListAsync();
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<TEntity?> GetByIdAsync<TEntity>(int id) where TEntity : class
-        {            
+        {
             return await _context.Set<TEntity>().FindAsync(id);
         }
 
-        public async Task<TEntity?> GetByParameterAsync<TEntity>(Expression<Func<TEntity, bool>> predicate, 
+        public async Task<TEntity?> GetByParameterAsync<TEntity>(Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TEntity : class
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
@@ -51,11 +57,11 @@ namespace CBSMonitoring.Services
         }
 
         public async Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class
-        {            
+        {
             _context.Update(entity);
             await _context.SaveChangesAsync();
         }
 
-        
+
     }
 }

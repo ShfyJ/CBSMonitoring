@@ -1,13 +1,12 @@
 ﻿using CBSMonitoring.Models;
-using CBSMonitoring.Models.Forms;
-using System.ComponentModel.DataAnnotations.Schema;
+using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.DTOs
 {
-    public class MonitoringDTO
+    public class MonitoringDto
     {
         public int OrganizationId { get; set; }
-        public int QuaterIndex { get; set; }
+        public int QuarterIndex { get; set; }
         public int Year { get; set; }
         public FileItem? FileItem { get; set; }
         public int? FileId { get; set; }
@@ -94,11 +93,12 @@ namespace CBSMonitoring.DTOs
         #region Form 2.2
 
         /// <form>2.2.1</form>
-        public int[]? SectNumber { get; set; }
-        public DateTime[]? DeadlineOfPlan { get; set; }
-        public bool[]? IsExecuted { get; set; }
-        public bool[]? DeadlineOfRealExec { get; set; }
-        public int[]? File_2_2_1Ids { get; set; }
+        public int? NumberOfSectsInActionPlan { get; set; }
+        public int? NumberOfDoneSects { get; set; }
+        public int? NumberOfDoneSectsInTime { get; set; }
+        public int? File_2_2_1Id { get; set; }
+        /// <form>2.2.2</form>
+        public List<TimelyExecutionOfPlanRequest>? TimelyExecutionOfPlans { get; set; }
 
         #endregion
 
@@ -410,8 +410,8 @@ namespace CBSMonitoring.DTOs
         #nullable enable
         public string? DocNumber { get; set; }
         public DateTime? DocDate { get; set; }
-        
+
 
     }
+
 }
- 

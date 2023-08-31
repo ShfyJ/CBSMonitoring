@@ -1,7 +1,6 @@
-﻿using CBSMonitoring.DTOs;
-using CBSMonitoring.Models;
-using ERPBlazor.Shared.Wrappers;
+﻿using ERPBlazor.Shared.Wrappers;
 using static CBSMonitoring.DTOs.Requests;
+using static CBSMonitoring.DTOs.Responses;
 
 namespace CBSMonitoring.Services
 {
@@ -9,8 +8,8 @@ namespace CBSMonitoring.Services
     {
         Task<Result<string>> AddFormItem(FormItemRequest item);
         Task<Result<string>> EditFormItem(FormItemRequest item, int id);
-        Task<Result<string>> DeleteFormItem (int id);
-        Task<Result<FormItem>> GetFormItem (int id);
-        Task<Result<IEnumerable<FormItem>>> GetFormItemsByFormSectionId(int formSectionId);
+        Task<Result<string>> DeleteFormItem(int id);
+        Task<Result<FormItemResponse>> GetFormItem(int id);
+        Task<Result<IEnumerable<FormItemResponse>>> GetFormItemsByFormSectionId(int formSectionId);
     }
 }

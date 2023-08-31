@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
-
-namespace CBSMonitoring.DTOs
+﻿namespace CBSMonitoring.DTOs
 {
     public class FormSectionRequest
     {
-        #nullable disable
+#nullable disable
         public string SectionName { get; set; }
         public string SectionNumber { get; set; }
         public int QuestionBlockId { get; set; }

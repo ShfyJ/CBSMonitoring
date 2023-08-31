@@ -2,9 +2,7 @@
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Services;
 using ERPBlazor.Shared.Wrappers;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic.FileIO;
 
 namespace CBSMonitoring.Models
 {
@@ -21,6 +19,7 @@ namespace CBSMonitoring.Models
 
         public async Task<Result<FileToStream>> GetFileAsStream(int id)
         {
+
             var file = await _context.FileModels.Where(x => x.FileId == id).FirstOrDefaultAsync();
 
             if (file is null)
@@ -52,7 +51,7 @@ namespace CBSMonitoring.Models
             }
         }
 
-        public async Task<Result<string>> SaveFile(FileItem file, int monitoringId)
+        public async Task<Result<int>> SaveFile(FileItem file, int monitoringId)
         {
             string wwwRootPath = _webHostEnvironment.WebRootPath;
             var basePath = Path.Combine(wwwRootPath + "/files/" + monitoringId.ToString());
@@ -77,6 +76,8 @@ namespace CBSMonitoring.Models
             }
             var systemPath = Path.Combine("/files/" + monitoringId.ToString(), temp + extension);
 
+            int fileModelId;
+
             try
             {
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -99,18 +100,19 @@ namespace CBSMonitoring.Models
                 await _context.FileModels.AddAsync(docfile);
                 await _context.SaveChangesAsync();
 
+                fileModelId = docfile.FileId;
 
             }
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Failed - {ex.Message}");
+                return await Result<int>.FailAsync($"Failed - {ex.Message}");
             }
 
             //if (fileType.Equals(EDocFileTypeConst.MainDocument))
             //    QRCodeGenerate("dsfasfsd", filePath);
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<int>.SuccessAsync(fileModelId);
         }
     }
 }

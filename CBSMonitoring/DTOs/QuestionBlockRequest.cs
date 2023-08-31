@@ -4,7 +4,7 @@ namespace CBSMonitoring.DTOs
 {
     public class QuestionBlockRequest
     {
-        #nullable disable
+#nullable disable
         [Required(ErrorMessage = "BlockNumber is must")]
         public string BlockNumber { get; set; }
         [Required(ErrorMessage = "BlockName is must")]

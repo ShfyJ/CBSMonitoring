@@ -1,11 +1,7 @@
 ﻿using AutoMapper;
-using CBSMonitoring.Data;
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
-using System.Web;
 
 namespace CBSMonitoring.Services
 {
@@ -32,7 +28,7 @@ namespace CBSMonitoring.Services
             }
 
             return await Result<string>.SuccessAsync($"Success");
-            
+
         }
 
         public async Task<Result<string>> DeleteFormSection(int id)

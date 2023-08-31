@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using CBSMonitoring.Model;
 using CBSMonitoring.Models;
-using CBSMonitoring.Model;
-using System.Reflection.Metadata;
 using CBSMonitoring.Models.Forms;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace CBSMonitoring.Data
 {
@@ -11,7 +10,7 @@ namespace CBSMonitoring.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            
+
         }
         public DbSet<OrgMonitoring> OrgMonitorings { get; set; }
         public DbSet<QuestionBlock> QuestionBlocks { get; set; }
@@ -21,7 +20,8 @@ namespace CBSMonitoring.Data
         public DbSet<FileModel> FileModels { get; set; }
         public DbSet<QualificationImprovedEmployee> QIEmployees { get; set; }
         public DbSet<FormItemType> FormItemTypes { get; set; }
-        
+        public DbSet<TimelyExecutionOfPlan> timelyExecutionOfPlans { get; set; }
+
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1
         public DbSet<Form1_1_2> Form1_1_2s { get; set; }   //1.1 
@@ -41,6 +41,7 @@ namespace CBSMonitoring.Data
         public DbSet<Form2_1_1> Form2_1_1s { get; set; }  //2.1
         public DbSet<Form2_1_1> Form2_1_2s { get; set; }
         public DbSet<Form2_2_1> Form2_2_1s { get; set; } //2.2
+        public DbSet<Form2_2_2> Form2_2_2s { get; set; } //2.2
         public DbSet<Form2_3_1> Form2_3_1s { get; set; }  //2.3
         public DbSet<Form2_3_2> Form2_3_2s { get; set; }
         public DbSet<Form2_3_3> Form2_3_3s { get; set; }

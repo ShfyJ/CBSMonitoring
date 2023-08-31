@@ -1,5 +1,4 @@
 ﻿using CBSMonitoring.DTOs;
-using CBSMonitoring.Models;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,14 +34,14 @@ namespace CBSMonitoring.Controllers
         [HttpPost("CreateQuestionBlock")]
         public async Task<IActionResult> CreateQuestionBlock([FromForm] QuestionBlockRequest qb)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             var result = await _qbService.AddQuestionBlock(qb);
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
                 return BadRequest(result.Messages);
 
             return Ok(result);
@@ -62,7 +61,7 @@ namespace CBSMonitoring.Controllers
         }
 
         [HttpPut("UpdateQuestionBlock/{id}")]
-        public async Task<IActionResult> UpdateQuestionBlock([FromForm]QuestionBlockRequest qb, int id )
+        public async Task<IActionResult> UpdateQuestionBlock([FromForm] QuestionBlockRequest qb, int id)
         {
             if (!ModelState.IsValid)
             {
@@ -75,14 +74,14 @@ namespace CBSMonitoring.Controllers
                 return BadRequest(result.Messages);
             else
                 return Ok(result);
-            
+
         }
 
         [HttpDelete("DeleteQuestionBlock/{id}")]
         public async Task<IActionResult> DeleteQuestionBlock(int id)
         {
             var result = await _qbService.RemoveQuestionBlock(id);
-            
+
             if (!result.Succeeded)
                 return BadRequest(result.Messages);
 

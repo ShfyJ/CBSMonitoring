@@ -1,16 +1,17 @@
-﻿using CBSMonitoring.Models.Forms;
-
-namespace CBSMonitoring.DTOs.FormDtos
+﻿namespace CBSMonitoring.DTOs.FormDtos
 {
-    public class Form1_1_1Dto 
+    public class Form1_1_1Dto
     {
-        public int OrganizationId { get; set; }
-        public int QuaterIndex { get; set; }
+        #nullable disable
+        public string OrganizationName { get; set; }
+        public int QuarterIndex { get; set; }
         public int Year { get; set; }
-        public List<FileItem>? Files { get; set; }
+        public string SectionNumber { get; set; }
+        public bool HasPolicy { get; set; }
+        public string FileDescription { get; set; }
+        #nullable enable
         public int? FileId { get; set; }
-        public string? SectionNumber { get; set; }
-        public bool? HasPolicy { get; set; }
+
     }
 
 }

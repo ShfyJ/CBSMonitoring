@@ -6,10 +6,10 @@ namespace CBSMonitoring.Model
     {
         [Key]
         public int OrganizationId { get; set; }
-        #nullable disable
+#nullable disable
         [Required]
         public string OrganizationName { get; set; }
-        public bool Status { get; set; } = true;    
+        public bool Status { get; set; } = true;
 
     }
 }
