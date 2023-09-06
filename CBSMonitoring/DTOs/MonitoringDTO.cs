@@ -1,46 +1,54 @@
-﻿using CBSMonitoring.Models;
+﻿using CBSMonitoring.Helpers;
+using CBSMonitoring.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.DTOs
 {
+    //[ModelBinder(typeof(JsonWithFilesFormDataModelBinder), Name = "json")]
     public class MonitoringDto
     {
         public int OrganizationId { get; set; }
         public int QuarterIndex { get; set; }
         public int Year { get; set; }
-        public FileItem? FileItem { get; set; }
-        public int? FileId { get; set; }
-        public string? SectionNumber { get; set; }
+        public string? SectionNumber { get; set; } = null;
 
         #region Forms
 
         #region form 1.1
         /// <form>1.1.1</form>
-        public bool? HasPolicy { get; set; }
-        public int? File_1_1_1Id { get; set; }
+        public bool? HasPolicy { get; set; } = null;
+
         /// <form>1.1.2</form>
-        public bool? IsReviewedByCBS { get; set; }
-        public int? File_1_1_2Id { get; set; }
+        public bool? IsReviewedByCBS { get; set; } = null;
+
         /// <form>1.1.3</form>
-        public bool? AgreedWithAuthBody { get; set; }
-        public int? File_1_1_3Id { get; set; }
+        public bool? AgreedWithAuthBody { get; set; } = null;
+
         /// <form>1.1.4</form>
-        public bool? AreEmpsFamiliarWithISP { get; set; }
-        public int? NumberOfEmployees { get; set; }
-        public float? PercentageOfEmpFamiliarWithPolicy { get; set; }
+        public bool? AreEmpsFamiliarWithISP { get; set; } = null;
+
+        public int? NumberOfEmployees { get; set; } = null;
+        public float? PercentageOfEmpFamiliarWithPolicy { get; set; } = null;
+
         /// <form>1.1.5</form>
-        public bool? IsAuditConducted { get; set; }
+        public bool? IsAuditConducted { get; set; } = null;
+
         /// <form>1.1.6</form>
-        public bool? HasISPRevised { get; set; }
-        public int? NumberOfRevision { get; set; }
-        public int? YearOfRevisions { get; set; }
+        public bool? HasISPRevised { get; set; } = null;
+
+        public int? NumberOfRevision { get; set; } = null;
+        public int? YearOfRevisions { get; set; } = null;
         #endregion
 
         #region Form 1.2
+
         /// <form>1.2.1</form>
-        public bool? AreInternalRegulationsAvailable { get; set; }
-        public int? NumberOfRegDocs { get; set; }
-        public string? ListOfRegDocs { get; set; }
+        public bool? AreInternalRegulationsAvailable { get; set; } = null;
+
+        public int? NumberOfRegDocs { get; set; } = null;
+        public string? ListOfRegDocs { get; set; } = null;
         #endregion
 
         #region Form 1.3
@@ -81,11 +89,9 @@ namespace CBSMonitoring.DTOs
         #region Form 2.1
         /// <form>2.1.1</form>
         public bool? IsActionPlanAvailableToEnsIC { get; set; }
-        public int? File_2_1_1Id { get; set; }
         public string? ReasonForAbsenceOfPlan { get; set; }
         /// <form>2.1.2</form>
         public bool? IsActionPlanAgreedToEnsIC { get; set; }
-        public int? File_2_1_2Id { get; set; }
         public string? ReasonForAbsenceOfAgreement { get; set; }
 
         #endregion
@@ -93,310 +99,319 @@ namespace CBSMonitoring.DTOs
         #region Form 2.2
 
         /// <form>2.2.1</form>
-        public int? NumberOfSectsInActionPlan { get; set; }
-        public int? NumberOfDoneSects { get; set; }
-        public int? NumberOfDoneSectsInTime { get; set; }
-        public int? File_2_2_1Id { get; set; }
+        public int? NumberOfSectsInActionPlan { get; set; } = null;
+
+        public int? NumberOfDoneSects { get; set; } = null;
+        public int? NumberOfDoneSectsInTime { get; set; } = null;
+
         /// <form>2.2.2</form>
-        public List<TimelyExecutionOfPlanRequest>? TimelyExecutionOfPlans { get; set; }
+        public List<TimelyExecutionOfPlanRequest>? TimelyExecutionOfPlans { get; set; } = null;
 
         #endregion
 
         #region Form 2.3
+
         /// <form>2.3.1</form>
-        public bool? IsListOfProtectedObjAvailable { get; set; }
-        public int? File_2_3_1Id { get; set; }
+        public bool? IsListOfProtectedObjAvailable { get; set; } = null;
+
         /// <form>2.3.2</form>
-        public bool? IsObjectsClasified { get; set; }
-        public int? File_2_3_2Id { get; set; }
+        public bool? IsObjectsClassified { get; set; } = null;
+
         /// <form>2.3.3</form>
-        public bool? IsISystemAvailable { get; set; }
-        public string? NamesOfISystems { get; set; }
+        public bool? IsISystemAvailable { get; set; } = null;
+
+        public string? NamesOfISystems { get; set; } = null;
+
         /// <form>2.3.4</form>
-        public bool? IsISystemResourcesAvailable { get; set; }
-        public string? NamesOfSystemResources { get; set; }
+        public bool? IsISystemResourcesAvailable { get; set; } = null;
+
+        public string? NamesOfSystemResources { get; set; } = null;
         #endregion
 
         #region Form 2.4
+
         /// <form>2.4.1</form>
-        public bool? IsISecDivisionPresent { get; set; }
-        public string? ISsecDivisionName { get; set; }
+        public bool? IsISecDivisionPresent { get; set; } = null;
+
+        public string? ISsecDivisionName { get; set; } = null;
+
         /// <form>2.4.2</form>
-        public bool? IsDevisionPositionPresent { get; set; }
-        public string? SectionHeadFullName { get; set; }
-        public string? PositionOfSectionHead { get; set; }
-        public string? PhoneNumOfSectionHead { get; set; }
-        public string? EmailOfSectionHead { get; set; }
-        public int? NumberOfISEmployees { get; set; }
+        public bool? IsDevisionPositionPresent { get; set; } = null;
+
+        public string? SectionHeadFullName { get; set; } = null;
+        public string? PositionOfSectionHead { get; set; } = null;
+        public string? PhoneNumOfSectionHead { get; set; } = null;
+        public string? EmailOfSectionHead { get; set; } = null;
+        public int? NumberOfISEmployees { get; set; } = null;
         /// <form>2.4.3</form>
-        public bool? IsOrganizationInvolvedInOutsourcingOfIS { get; set; }
-        public string? NameOfOutSourcingOrg { get; set; }
-        public string? ContractNumberOfOutsoucingOrg { get; set; }
-        public DateTime? ContractDateOfOutsoucingOrg { get; set; }
-        public string? ListOfServicesOfOutsourcingOrg { get; set; }
+        public bool? IsOrganizationInvolvedInOutsourcingOfIS { get; set; } = null;
+        public string? NameOfOutSourcingOrg { get; set; } = null;
+        public string? ContractNumberOfOutsoucingOrg { get; set; } = null;
+        public DateTime? ContractDateOfOutsoucingOrg { get; set; } = null;
+        public string? ListOfServicesOfOutsourcingOrg { get; set; } = null;
         #endregion
 
         #region Form 2.5
         /// <form>2.5.1</form>
-        public bool? IsResponsiblePersonAssigned { get; set; }
-        public string? FullNameOfRespPerSon { get; set; }
-        public string? PositionOfRespPerson { get; set; }
-        public string? TelNumOfRespPerson { get; set; }
-        public string? EmailOfRespPerson { get; set; }
+        public bool? IsResponsiblePersonAssigned { get; set; } = null;
+        public string? FullNameOfRespPerSon { get; set; } = null;
+        public string? PositionOfRespPerson { get; set; } = null;
+        public string? TelNumOfRespPerson { get; set; } = null;
+        public string? EmailOfRespPerson { get; set; } = null;
 
         #endregion
 
         #region Form 2.6
         /// <form>2.6.1</form>
-        public bool? IsRespPersonAvailableForSecIssues { get; set; }
-        public string? FullNameOfRespPersonForSecIssues { get; set; }
-        public string? PositionOfRespPersonForSecIssues { get; set; }
-        public string? TelNumberOfRespPersonForSecIssues { get; set; }
-        public string? EmailOfRespPersonForSecIssues { get; set; }
+        public bool? IsRespPersonAvailableForSecIssues { get; set; } = null;
+        public string? FullNameOfRespPersonForSecIssues { get; set; } = null;
+        public string? PositionOfRespPersonForSecIssues { get; set; } = null;
+        public string? TelNumberOfRespPersonForSecIssues { get; set; } = null;
+        public string? EmailOfRespPersonForSecIssues { get; set; } = null;
 
         #endregion
 
         #region Form 2.7
         /// <form>2.7.1</form>
-        public bool? IsInstructionPresent { get; set; }
-        public int? PositionInstructionCount { get; set; }
+        public bool? IsInstructionPresent { get; set; } = null;
+        public int? PositionInstructionCount { get; set; } = null;
 
         #endregion
 
         #region Form 2.8
         ///<form>2.8.1</form>
-        public bool? IsEmpsQualificationImproved { get; set; }
-        public int? NumberOfEmpsQualificaitonImproved { get; set; }
+        public bool? IsEmpsQualificationImproved { get; set; } = null;
+        public int? NumberOfEmpsQualificaitonImproved { get; set; } = null;
         //public int[]? QualifImpEmpIds { get; set; }
-        public List<QualificationImprovedEmployee>? QualificationImprovedEmployees { get; set; }
+        public List<QualificationImprovedEmployee>? QualificationImprovedEmployees { get; set; } = null;
         #endregion
 
         #region Form 2.9
         ///<form>2.9.1</form>
-        public string? WebAddress { get; set; }
-        public string? ExpertizingPeriod { get; set; }
-        public string? ExpertConclusionNumber { get; set; }
-        public DateTime? ExpertConclusionDate { get; set; }
-        public bool? HasShortcomings { get; set; }
-        public bool? IsShortcomingsOfWebsiteEliminated { get; set; }
+        public string? WebAddress { get; set; } = null;
+        public string? ExpertizingPeriod { get; set; } = null;
+        public string? ExpertConclusionNumber { get; set; } = null;
+        public DateTime? ExpertConclusionDate { get; set; } = null;
+        public bool? HasShortcomings { get; set; } = null;
+        public bool? IsShortcomingsOfWebsiteEliminated { get; set; } = null;
         #endregion
 
         #region Form 2.10
         ///<form>2.10.1</form>
-        public bool? IsObjectsAudited { get; set; }
-        public string? AuditedObjectsNames { get; set; }
-        public string? OrgNameMadeAudit { get; set; }
-        public string? AuditPeriod { get; set; }
-        public string? NumberOfAuditConc { get; set; }
-        public DateTime? AuditConcDate { get; set; }
-        public bool? IsShortcomingDetected { get; set; }
-        public bool? IsShortcomingsOfObjecttEliminated { get; set; }
+        public bool? IsObjectsAudited { get; set; } = null;
+        public string? AuditedObjectsNames { get; set; } = null;
+        public string? OrgNameMadeAudit { get; set; } = null;
+        public string? AuditPeriod { get; set; } = null;
+        public string? NumberOfAuditConc { get; set; } = null;
+        public DateTime? AuditConcDate { get; set; } = null;
+        public bool? IsShortcomingDetected { get; set; } = null;
+        public bool? IsShortcomingsOfObjecttEliminated { get; set; } = null;
         #endregion
 
         #region Form 2.11
         ///<form>2.11.1</form>
-        public bool? IsEntranceSecurityAvailable { get; set; }
-        public int? NumberOfObjWithSecurity { get; set; }
+        public bool? IsEntranceSecurityAvailable { get; set; } = null;
+        public int? NumberOfObjWithSecurity { get; set; } = null;
         ///<form>2.11.2</form>
-        public bool? IsACSAvialble { get; set; }
-        public int? NumberOfObjInACS { get; set; }
+        public bool? IsACSAvialble { get; set; } = null;
+        public int? NumberOfObjInACS { get; set; } = null;
         ///<form>2.11.3</form>
-        public bool? IsCheckInOutLogAvailable { get; set; }
-        public int? NumberOfPointsInLog { get; set; }
+        public bool? IsCheckInOutLogAvailable { get; set; } = null;
+        public int? NumberOfPointsInLog { get; set; } = null;
         ///<form>2.11.4</form>
-        public bool? IsSurveillanceCamerasAvailable { get; set; }
-        public int? NumberOfVideoCamsInCentre { get; set; }
-        public int? NumberOfStructObjsWithCams { get; set; }
-        public int? NumberOfVideoCamsInTerritorialObjs { get; set; }
+        public bool? IsSurveillanceCamerasAvailable { get; set; } = null;
+        public int? NumberOfVideoCamsInCentre { get; set; } = null;
+        public int? NumberOfStructObjsWithCams { get; set; } = null;
+        public int? NumberOfVideoCamsInTerritorialObjs { get; set; } = null;
         ///<form>2.11.5</form>
-        public bool? IsSecAlarmsInCentreAvailable { get; set; }
-        public int? NumberOfRoomsMonitoredByAlarms { get; set; }
-        public int? NumberOfTerritObjsWithAlarms { get; set; }
+        public bool? IsSecAlarmsInCentreAvailable { get; set; } = null;
+        public int? NumberOfRoomsMonitoredByAlarms { get; set; } = null;
+        public int? NumberOfTerritObjsWithAlarms { get; set; } = null;
         ///<form>2.11.6</form>
-        public bool? IsServerRoomOrDataCenterAvailable { get; set; }
-        public int? NumberOfServerRoom { get; set; }
-        public int? NumberOfDataCentre { get; set; }
-        public int? NumberOfSRandDCWithMetalDoor { get; set; }
-        public int? NumberOfSRandDCWithWithSystemControl { get; set; }
-        public bool? IsCoolingSystemAvailable { get; set; }
-        public bool? IsAntiFireEquipAvailable { get; set; }
-        public bool? IsPlanForPreventiveMaintAvailable { get; set; }
-        public bool? IsVideoCamAvailable { get; set; }
-        public bool? IsFalseFloorAndCeilingAvailable { get; set; }
-        public bool? IsTempSensorsAvailable { get; set; }
-        public bool? IsLogsForSRAndDCEntrance { get; set; }
+        public bool? IsServerRoomOrDataCenterAvailable { get; set; } = null;
+        public int? NumberOfServerRoom { get; set; } = null;
+        public int? NumberOfDataCentre { get; set; } = null;
+        public int? NumberOfSRandDCWithMetalDoor { get; set; } = null;
+        public int? NumberOfSRandDCWithWithSystemControl { get; set; } = null;
+        public bool? IsCoolingSystemAvailable { get; set; } = null;
+        public bool? IsAntiFireEquipAvailable { get; set; } = null;
+        public bool? IsPlanForPreventiveMaintAvailable { get; set; } = null;
+        public bool? IsVideoCamAvailable { get; set; } = null;
+        public bool? IsFalseFloorAndCeilingAvailable { get; set; } = null;
+        public bool? IsTempSensorsAvailable { get; set; } = null;
+        public bool? IsLogsForSRAndDCEntrance { get; set; } = null;
         ///<form>2.11.7</form>
-        public bool? IsSealedOuterCaseAvailable { get; set; }
-        public int? NumberOfServersWithSealedOuterCases { get; set; }
-        public int? NumberOfWStWithSealedOuterCases { get; set; }
+        public bool? IsSealedOuterCaseAvailable { get; set; } = null;
+        public int? NumberOfServersWithSealedOuterCases { get; set; } = null;
+        public int? NumberOfWStWithSealedOuterCases { get; set; } = null;
         #endregion
 
         #region Form 2.12
         ///<form>2.12.1</form>
-        public bool? IsLogsForIncidentsAvailable { get; set; }
-        public int? NumberOfObjWithIncidentLog { get; set; }
-        public bool? IsDepISAndHeadNotified { get; set; }
-        public bool? IsIncidentsInvestigated { get; set; }
-        public bool? IsAnyIncidentResoluted { get; set; }
-        public int? NumberOfIncidents { get; set; }
-        public int? NumOfIncidentsInStructOrg { get; set; }
-        public int? NumOfIncidentsInSubObjects { get; set; }
-        public int? NumOfIncidentsInvestigated { get; set; }
-        public int? NumOFIncidentsResoluted { get; set; }
+        public bool? IsLogsForIncidentsAvailable { get; set; } = null;
+        public int? NumberOfObjWithIncidentLog { get; set; } = null;
+        public bool? IsDepISAndHeadNotified { get; set; } = null;
+        public bool? IsIncidentsInvestigated { get; set; } = null;
+        public bool? IsAnyIncidentResoluted { get; set; } = null;
+        public int? NumberOfIncidents { get; set; } = null;
+        public int? NumOfIncidentsInStructOrg { get; set; } = null;
+        public int? NumOfIncidentsInSubObjects { get; set; } = null;
+        public int? NumOfIncidentsInvestigated { get; set; } = null;
+        public int? NumOFIncidentsResoluted { get; set; } = null;
         #endregion
 
         #region Form 2.13
         ///<form>2.13.1</form>
-        public bool? IsBackupMeasuresProvided { get; set; }
-        public int? NumOfISBackupProvided { get; set; }
-        public int? NumOfConfidentialInfo { get; set; }
-        public string? BackupFrequency { get; set; }
-        public int? NumOfServersSoftRedundancyMeasured { get; set; }
-        public bool? IsApprovedScheduleForBackupAvailable { get; set; }
+        public bool? IsBackupMeasuresProvided { get; set; } = null;
+        public int? NumOfISBackupProvided { get; set; } = null;
+        public int? NumOfConfidentialInfo { get; set; } = null;
+        public string? BackupFrequency { get; set; } = null;
+        public int? NumOfServersSoftRedundancyMeasured { get; set; } = null;
+        public bool? IsApprovedScheduleForBackupAvailable { get; set; } = null;
         #endregion
 
         #region Form 2.14
         ///<form>2.14.1</form>
-        public int? NumOfServersWithLicensedOS { get; set; }
-        public int? NumOfServersWithUpdatingOs { get; set; }
-        public int? NumOfWRoomswihLicensedOS { get; set; }
+        public int? NumOfServersWithLicensedOS { get; set; } = null;
+        public int? NumOfServersWithUpdatingOs { get; set; } = null;
+        public int? NumOfWRoomswihLicensedOS { get; set; } = null;
         #endregion
 
         #region Form 2.15
         ///<form>2.15.1</form>
-        public bool? IsPlannedPrevWorkAvailable { get; set; }
-        public string? FrequencyOfPrevMaintanence { get; set; }
+        public bool? IsPlannedPrevWorkAvailable { get; set; } = null;
+        public string? FrequencyOfPrevMaintanence { get; set; } = null;
         #endregion
 
         #region Form 2.16
         ///<form>2.16.1</form>
-        public bool? IsRecoveryPlansAvailable { get; set; }
+        public bool? IsRecoveryPlansAvailable { get; set; } = null;
         #endregion
 
         #region Form 2.17
         ///<form>2.17.1</form>
-        public bool? IsFireAlarmSystAvailable { get; set; }
-        public bool? IsGasFireExtSystAvailable { get; set; }
-        public bool? IsUPSForSEqAvailable { get; set; }
-        public int? NumberOfServersWithUPS { get; set; }
-        public bool? IsUPSAvailableForWRs { get; set; }
-        public int? NumberOfWRsWithUPS { get; set; }
-        public bool? IsAlternativePowerLAvailable { get; set; }
-        public bool? IsGeneratorsAvailable { get; set; }
-        public int? NumberOfGenerators { get; set; }
+        public bool? IsFireAlarmSystAvailable { get; set; } = null;
+        public bool? IsGasFireExtSystAvailable { get; set; } = null;
+        public bool? IsUPSForSEqAvailable { get; set; } = null;
+        public int? NumberOfServersWithUPS { get; set; } = null;
+        public bool? IsUPSAvailableForWRs { get; set; } = null;
+        public int? NumberOfWRsWithUPS { get; set; } = null;
+        public bool? IsAlternativePowerLAvailable { get; set; } = null;
+        public bool? IsGeneratorsAvailable { get; set; } = null;
+        public int? NumberOfGenerators { get; set; } = null;
         #endregion
 
         #region Form 2.18
         ///<form>2.18.1</form>
-        public bool? IsLogsOfCarriersOfConfInfAvailable { get; set; }
+        public bool? IsLogsOfCarriersOfConfInfAvailable { get; set; } = null;
         #endregion
 
         #region Form 3.1
         ///<form>3.1.1</form>
-        public bool? IsPasswProtectInWRsAvailable { get; set; }
-        public int? NumberOfWRsWithPasswProtection { get; set; }
-        public string? FrequencyOfPasswUpdateInWRs { get; set; }
+        public bool? IsPasswProtectInWRsAvailable { get; set; } = null;
+        public int? NumberOfWRsWithPasswProtection { get; set; } = null;
+        public string? FrequencyOfPasswUpdateInWRs { get; set; } = null;
         ///<form>3.1.2</form>
-        public bool? IsPasswProtectInSRsAvailable { get; set; }
-        public int? NumberOfSRsWithPasswProtection { get; set; }
-        public string? FrequncyOfPasswUpdateInSRs { get; set; }
+        public bool? IsPasswProtectInSRsAvailable { get; set; } = null;
+        public int? NumberOfSRsWithPasswProtection { get; set; } = null;
+        public string? FrequncyOfPasswUpdateInSRs { get; set; } = null;
         #endregion
 
         #region Form 3.2
         ///<form>3.2.1</form>
-        public bool? IsACToNetInCentreAvailable { get; set; }
-        public string? NameOfToolForACInCentre { get; set; }
+        public bool? IsACToNetInCentreAvailable { get; set; } = null;
+        public string? NameOfToolForACInCentre { get; set; } = null;
         ///<form>3.2.2</form>
-        public bool? IsACToNetInStrucDivAvailable { get; set; }
-        public int? NumOfOrgsWithACToNetInStrucDiv { get; set; }
-        public string? NameOfToolsForACInStrucDiv { get; set; }
+        public bool? IsACToNetInStrucDivAvailable { get; set; } = null;
+        public int? NumOfOrgsWithACToNetInStrucDiv { get; set; } = null;
+        public string? NameOfToolsForACInStrucDiv { get; set; } = null;
         #endregion
 
         #region Form 3.3
         ///<form>3.3.1</form>
-        public bool? IsAccessControlSystemAvailable { get; set; }
-        public int? NumberOfISWithACS { get; set; }
-        public int? NumberOfISWithOnlyPassw { get; set; }
-        public int? NumberOfISWithCryptKeys { get; set; }
-        public int? NumberOfISWithConfInfUsingACS { get; set; }
-        public int? NumberOfISWithConfInfWithOnlyPassw { get; set; }
-        public int? NumberOfISWithConfInfWithCryptKeys { get; set; }
-        public string? NameOfACMTool { get; set; }
-        public string? UserIDsInAccess { get; set; }
-        public bool? IsAccessEventsAndLogsRecorded { get; set; }
-        public string? FrequencyOfIDsChange { get; set; }
+        public bool? IsAccessControlSystemAvailable { get; set; } = null;
+        public int? NumberOfISWithACS { get; set; } = null;
+        public int? NumberOfISWithOnlyPassw { get; set; } = null;
+        public int? NumberOfISWithCryptKeys { get; set; } = null;
+        public int? NumberOfISWithConfInfUsingACS { get; set; } = null;
+        public int? NumberOfISWithConfInfWithOnlyPassw { get; set; } = null;
+        public int? NumberOfISWithConfInfWithCryptKeys { get; set; } = null;
+        public string? NameOfACMTool { get; set; } = null;
+        public string? UserIDsInAccess { get; set; } = null;
+        public bool? IsAccessEventsAndLogsRecorded { get; set; } = null;
+        public string? FrequencyOfIDsChange { get; set; } = null;
         #endregion
 
         #region Form 3.4
         ///<form>3.4.1</form>
-        public bool? IsAnitivirusAvailable { get; set; }
-        public string? NameAndVersionOfAntivirus { get; set; }
-        public bool? IsLicenseForAntivirusAvailable { get; set; }
-        public int? NumberOfServersWithAntivirus { get; set; }
-        public int? NumberOfWRsWithAntivirus { get; set; }
+        public bool? IsAnitivirusAvailable { get; set; } = null;
+        public string? NameAndVersionOfAntivirus { get; set; } = null;
+        public bool? IsLicenseForAntivirusAvailable { get; set; } = null;
+        public int? NumberOfServersWithAntivirus { get; set; } = null;
+        public int? NumberOfWRsWithAntivirus { get; set; } = null;
         #endregion
 
         #region Form 3.5
         ///<form>3.5.1</form>
-        public bool? IsFirewallAvailable { get; set; }
-        public string? NameAndVersionOfFirewall { get; set; }
-        public bool? IsLicenceForFireWallAvailable { get; set; }
+        public bool? IsFirewallAvailable { get; set; } = null;
+        public string? NameAndVersionOfFirewall { get; set; } = null;
+        public bool? IsLicenceForFireWallAvailable { get; set; } = null;
         #endregion
 
         #region Form 3.6
         ///<form>3.6.1</form>
-        public bool? IsIDPSAvailable { get; set; }
-        public string? NameAndVersionOfIDPS { get; set; }
-        public bool? IsLicenseForIDPSAvailable { get; set; }
+        public bool? IsIDPSAvailable { get; set; } = null;
+        public string? NameAndVersionOfIDPS { get; set; } = null;
+        public bool? IsLicenseForIDPSAvailable { get; set; } = null;
         #endregion
 
         #region Form 3.7
         ///<form>3.7.1</form>
-        public bool? IsEXATAvailable { get; set; }
-        public int? NumberOfSystemsWithEXAT { get; set; }
+        public bool? IsEXATAvailable { get; set; } = null;
+        public int? NumberOfSystemsWithEXAT { get; set; } = null;
         #endregion
 
         #region Form 3.8
         ///<form>3.8.1</form>
-        public bool? IsHUMOAvailable { get; set; }
-        public int? NumberOfsystemsWithHUMO { get; set; }
+        public bool? IsHUMOAvailable { get; set; } = null;
+        public int? NumberOfsystemsWithHUMO { get; set; } = null;
         #endregion
 
         #region Form 3.9
         ///<form>3.9.1</form>
-        public bool? IsVPNUsed { get; set; }
-        public string? PurposeAndScopeOfVPNConnections { get; set; }
+        public bool? IsVPNUsed { get; set; } = null;
+        public string? PurposeAndScopeOfVPNConnections { get; set; } = null;
         #endregion
 
         #region Form 3.10
         ///<form>3.10.1</form>
-        public bool? IsDLPAvailable { get; set; }
-        public string? NameAndVersionOfDLP { get; set; }
-        public bool? IsLicenceOfDLPAvaliable { get; set; }
-        public int? NumberOfWorkRoomsWithDLP { get; set; }
+        public bool? IsDLPAvailable { get; set; } = null;
+        public string? NameAndVersionOfDLP { get; set; } = null;
+        public bool? IsLicenceOfDLPAvaliable { get; set; } = null;
+        public int? NumberOfWorkRoomsWithDLP { get; set; } = null;
         #endregion
 
         #region Form 3.11
         ///<form>3.11.1</form>
-        public bool? IsSIEMAvailable { get; set; }
-        public string? NameAndVersionOfSIEM { get; set; }
-        public bool? IsLicenseForSIEMAvailable { get; set; }
+        public bool? IsSIEMAvailable { get; set; } = null;
+        public string? NameAndVersionOfSIEM { get; set; } = null;
+        public bool? IsLicenseForSIEMAvailable { get; set; } = null;
         #endregion
 
         #region Form 3.12
         ///<form>3.12.1</form>
-        public bool? IsCAndAnalysisToolAvailable { get; set; }
-        public string? NameAndVersionOfCAndSAnalysisTool { get; set; }
-        public string? PurposeOfCAndSAnalysisTools { get; set; }
-        public string? NumberOfCAndSAnalysisTools { get; set; }
+        public bool? IsCAndAnalysisToolAvailable { get; set; } = null;
+        public string? NameAndVersionOfCAndSAnalysisTool { get; set; } = null;
+        public string? PurposeOfCAndSAnalysisTools { get; set; } = null;
+        public string? NumberOfCAndSAnalysisTools { get; set; } = null;
         #endregion
 
         #region Form 3.13
         ///<form>3.13.1</form>
-        public bool? IsProtectionToolAvailable { get; set; }
-        public string? NameOfProtectionTool { get; set; }
-        public string? PurposeOfProtectionTool { get; set; }
-        public int? NumberOfProtectionTool { get; set; }
+        public bool? IsProtectionToolAvailable { get; set; } = null;
+        public string? NameOfProtectionTool { get; set; } = null;
+        public string? PurposeOfProtectionTool { get; set; } = null;
+        public int? NumberOfProtectionTool { get; set; } = null;
         #endregion
 
         #endregion
@@ -405,11 +420,11 @@ namespace CBSMonitoring.DTOs
     public class FileItem
     {
         #nullable disable
-        public IFormFile File { get; set; }
-        public string Description { get; set; }
+        public IFormFile File { get;}
+        public string Description { get;}
         #nullable enable
-        public string? DocNumber { get; set; }
-        public DateTime? DocDate { get; set; }
+        public string? DocNumber { get;}
+        public DateTime? DocDate { get; }
 
 
     }

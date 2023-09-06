@@ -14,7 +14,7 @@ namespace CBSMonitoring.Models
         public bool IsListItem { get; set; } = false;
         public int? ListIndex { get; set; }
         public string? ListLabel { get; set; }
-#nullable disable
+        #nullable disable
         public bool IsRequired { get; set; } = true;
         public string ItemLabel { get; set; }
         public string ItemName { get; set; }

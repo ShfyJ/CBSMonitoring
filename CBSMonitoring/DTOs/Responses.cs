@@ -2,6 +2,8 @@
 {
     public class Responses
     {
+        public record AuthResponse(string UserName, string Email, string Token);
+        public record RegistrationResponse(string UserName, string Email, string Password);
         public record FormItemResponse(int ItemId, string ItemLabel, string ItemName, bool IsMain, bool IsActive, bool IsRequired, string ItemTypeName,
             int FormSectionId, int Order, string[]? SelectOptions = null, bool IsListItem = false, int? ListIndex = null);
 

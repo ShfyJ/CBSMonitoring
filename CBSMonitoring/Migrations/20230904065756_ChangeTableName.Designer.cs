@@ -3,6 +3,7 @@ using System;
 using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CBSMonitoring.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230904065756_ChangeTableName")]
+    partial class ChangeTableName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1133,7 +1136,7 @@ namespace CBSMonitoring.Migrations
                     b.Property<int?>("File_2_3_2Id")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsObjectsClassified")
+                    b.Property<bool?>("IsObjectsClasified")
                         .HasColumnType("boolean");
 
                     b.HasIndex("File_2_3_2Id");

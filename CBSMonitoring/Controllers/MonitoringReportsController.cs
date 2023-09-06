@@ -5,10 +5,16 @@ using CBSMonitoring.Services.FormReports;
 using ERPBlazor.Shared.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Authorization;
 using static CBSMonitoring.DTOs.Requests;
+using CBSMonitoring.Helpers;
+using CBSMonitoring.Wrappers;
+using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Models;
 
 namespace CBSMonitoring.Controllers
 {
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MonitoringReportsController : ControllerBase
@@ -24,10 +30,11 @@ namespace CBSMonitoring.Controllers
 
         }
 
+        
         [HttpPost("AddReport/{sectionNumber}")]
-        public async Task<IActionResult> AddReport([FromForm] MonitoringDto monitoringDto, string sectionNumber)
+        public async Task<IActionResult> AddReport([FromForm] MultipartFormDataWithMultipleFiles<MonitoringDto> monitoringReport, string sectionNumber)
         {
-            object[] args = { monitoringDto, sectionNumber };
+            object[] args = { monitoringReport.Json, sectionNumber };
             const string methodName = nameof(IMonitoringFactory.AddMonitoringReport);
 
             return await InvokeGenericMethod(sectionNumber, methodName, args, 1);

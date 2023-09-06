@@ -74,6 +74,12 @@ namespace CBSMonitoring.Helpers
 
             #region Form 2.2.2
             CreateMap<MonitoringDto, Form2_2_2>().ReverseMap();
+
+            CreateMap<MonitoringDto, Form2_2_2>()
+                .ForMember(
+                    dest => dest.TimelyExecutionOfPlans,
+                    opt => opt.MapFrom(src => src.TimelyExecutionOfPlans));
+
             #endregion
         }
     }

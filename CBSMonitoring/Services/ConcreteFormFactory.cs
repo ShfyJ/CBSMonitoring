@@ -10,10 +10,18 @@ namespace CBSMonitoring.Services
         public override Type[] GetMonitoringForm(string formNumber, int argCount)
             => formNumber switch
             {
-                FormType.Form1_1_1 => argCount == 1 ? new Type[] { typeof(Form1_1_1) } : new Type[] { typeof(Form1_1_1), typeof(Form1_1_1Dto) },
-                FormType.Form1_1_2 => argCount == 1 ? new Type[] { typeof(Form1_1_2) } : new Type[] { typeof(Form1_1_2), typeof(Form1_1_2) },
-                FormType.Form1_1_3 => argCount == 1 ? new Type[] { typeof(Form1_1_3) } : new Type[] { typeof(Form1_1_3), typeof(Form1_1_3) },
-                FormType.Form1_1_4 => argCount == 1 ? new Type[] { typeof(Form1_1_4) } : new Type[] { typeof(Form1_1_4), typeof(Form1_1_4) },
+                FormType.Form1_1_1 => argCount == 1
+                    ? new Type[] { typeof(Form1_1_1) }
+                    : new Type[] { typeof(Form1_1_1), typeof(Form1_1_1Dto) },
+                FormType.Form1_1_2 => argCount == 1
+                    ? new Type[] { typeof(Form1_1_2) }
+                    : new Type[] { typeof(Form1_1_2), typeof(Form1_1_2) },
+                FormType.Form1_1_3 => argCount == 1
+                    ? new Type[] { typeof(Form1_1_3) }
+                    : new Type[] { typeof(Form1_1_3), typeof(Form1_1_3) },
+                FormType.Form1_1_4 => argCount == 1
+                    ? new Type[] { typeof(Form1_1_4) }
+                    : new Type[] { typeof(Form1_1_4), typeof(Form1_1_4) },
                 FormType.Form1_1_5 => argCount == 1 ? new Type[] { typeof(Form1_1_5) } : new Type[] { typeof(Form1_1_5), typeof(Form1_1_5) },
                 FormType.Form1_1_6 => argCount == 1 ? new Type[] { typeof(Form1_1_6) } : new Type[] { typeof(Form1_1_6), typeof(Form1_1_6) },
                 FormType.Form1_2_1 => argCount == 1 ? new Type[] { typeof(Form1_2_1) } : new Type[] { typeof(Form1_2_1), typeof(Form1_2_1) },

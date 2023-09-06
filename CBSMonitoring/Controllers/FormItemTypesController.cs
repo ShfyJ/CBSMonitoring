@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CBSMonitoring.Models;
 using CBSMonitoring.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static CBSMonitoring.DTOs.Requests;
 
@@ -8,6 +9,7 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FormItemTypesController : ControllerBase

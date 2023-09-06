@@ -12,7 +12,7 @@ namespace CBSMonitoring.Data
         {
 
         }
-        public DbSet<OrgMonitoring> OrgMonitorings { get; set; }
+        public DbSet<OrgMonitoring> OrgMonitoringReports { get; set; }
         public DbSet<QuestionBlock> QuestionBlocks { get; set; }
         public DbSet<FormSection> FormSections { get; set; }
         public DbSet<FormItem> FormItems { get; set; }
@@ -20,7 +20,7 @@ namespace CBSMonitoring.Data
         public DbSet<FileModel> FileModels { get; set; }
         public DbSet<QualificationImprovedEmployee> QIEmployees { get; set; }
         public DbSet<FormItemType> FormItemTypes { get; set; }
-        public DbSet<TimelyExecutionOfPlan> timelyExecutionOfPlans { get; set; }
+        public DbSet<TimelyExecutionOfPlan> TimelyExecutionOfPlans { get; set; }
 
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1

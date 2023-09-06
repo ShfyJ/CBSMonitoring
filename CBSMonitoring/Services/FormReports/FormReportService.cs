@@ -39,19 +39,19 @@ namespace CBSMonitoring.Services.FormReports
             {
                 await _genericRepository.AddAsync(report);
 
-                if (reportForm.FileItem!.File is null)
-                {
-                    return await Result<string>.SuccessAsync($"No file uploaded to form 1.1.1 report with id ={type.GetProperty("MonitoringId")?.GetValue(report, null)}");
-                }
+                //if (reportForm.FileItem!.File is null)
+                //{
+                //    return await Result<string>.SuccessAsync($"No file uploaded to form 1.1.1 report with id ={type.GetProperty("MonitoringId")?.GetValue(report, null)}");
+                //}
 
-                PropertyInfo monitoringIdProp = type.GetProperty(nameof(OrgMonitoring.MonitoringId))!;
-                int monitoringId = Convert.ToInt32(monitoringIdProp.GetValue(report));
-                var result = await _fileWorkRoom.SaveFile(reportForm.FileItem, monitoringId);
+                //PropertyInfo monitoringIdProp = type.GetProperty(nameof(OrgMonitoring.MonitoringId))!;
+                //int monitoringId = Convert.ToInt32(monitoringIdProp.GetValue(report));
+                //var result = await _fileWorkRoom.SaveFile(reportForm.FileItem, monitoringId);
 
-                PropertyInfo fileId = GetFileIdProperty(type);
-                fileId.SetValue(report, result.Data);
+                //PropertyInfo fileId = GetFileIdProperty(type);
+                //fileId.SetValue(report, result.Data);
 
-                await _genericRepository.UpdateAsync(report);
+                //await _genericRepository.UpdateAsync(report);
             }
 
             catch (Exception ex)
