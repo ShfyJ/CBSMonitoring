@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CBSMonitoring.Models.Forms;
 
 namespace CBSMonitoring.Models
 {
@@ -16,7 +17,7 @@ namespace CBSMonitoring.Models
         public DateTime CompletionDate { get; set; }
         public int OrgMonitoringId { get; set; }
         [ForeignKey(nameof(OrgMonitoringId))]
-        public OrgMonitoring OrgMonitoring { get; set; }
+        public Form2_2_2 OrgMonitoring { get; set; }
         #nullable enable
         public string? Comments { get; set; }
     }

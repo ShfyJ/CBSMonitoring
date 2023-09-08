@@ -8,5 +8,7 @@
             int FormSectionId, int Order, string[]? SelectOptions = null, bool IsListItem = false, int? ListIndex = null);
 
         public record TimelyExecutionOfPlanResponse(int Id, string SectNameWithNumber, string Doers, DateTime DeadlineOfPlan, string Status, DateTime CompletionDate, int OrgMonitoringId, string? Comments = null);
+        public record QualificationImprovedEmployeeResponse(int Id, string FullName, string Position, string CourseName,
+            string EducationPeriod, string CourseConductedOrgName, int OrgMonitoringId, int CertificateFileId);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using CBSMonitoring.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CBSMonitoring.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230907131807_changeNavigationPropertyInTimelyExecutionOfPlans")]
+    partial class changeNavigationPropertyInTimelyExecutionOfPlans
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,6 +254,9 @@ namespace CBSMonitoring.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("Form2_8_1MonitoringId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -265,6 +271,8 @@ namespace CBSMonitoring.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CertificateFileId");
+
+                    b.HasIndex("Form2_8_1MonitoringId");
 
                     b.HasIndex("OrgMonitoringId");
 
@@ -1284,6 +1292,9 @@ namespace CBSMonitoring.Migrations
                     b.Property<int?>("NumberOfEmpsQualificaitonImproved")
                         .HasColumnType("integer");
 
+                    b.Property<int[]>("QualifImpEmpIds")
+                        .HasColumnType("integer[]");
+
                     b.HasDiscriminator().HasValue("Form2_8_1");
                 });
 
@@ -1640,8 +1651,12 @@ namespace CBSMonitoring.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CBSMonitoring.Models.Forms.Form2_8_1", "OrgMonitoring")
+                    b.HasOne("CBSMonitoring.Models.Forms.Form2_8_1", null)
                         .WithMany("QualificationImprovedEmployees")
+                        .HasForeignKey("Form2_8_1MonitoringId");
+
+                    b.HasOne("CBSMonitoring.Models.OrgMonitoring", "OrgMonitoring")
+                        .WithMany()
                         .HasForeignKey("OrgMonitoringId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

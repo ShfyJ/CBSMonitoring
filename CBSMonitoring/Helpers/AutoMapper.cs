@@ -12,6 +12,17 @@ namespace CBSMonitoring.Helpers
 
         public AutoMapper()
         {
+            #region TimeExecutionOfPlan
+
+            CreateMap<TimelyExecutionOfPlanRequest, TimelyExecutionOfPlan>();
+
+            #endregion
+
+            #region QualificationImprovedEmployee
+
+            CreateMap<QualificationImprovedEmployeeRequest, QualificationImprovedEmployee>();
+
+            #endregion
             #region Form Item Type
             CreateMap<FormItemTypeRequest, FormItemType>()
                 .ForMember(dest => dest.TypeId, opt => opt.Ignore());
@@ -73,12 +84,21 @@ namespace CBSMonitoring.Helpers
             #endregion
 
             #region Form 2.2.2
-            CreateMap<MonitoringDto, Form2_2_2>().ReverseMap();
 
             CreateMap<MonitoringDto, Form2_2_2>()
                 .ForMember(
                     dest => dest.TimelyExecutionOfPlans,
                     opt => opt.MapFrom(src => src.TimelyExecutionOfPlans));
+
+            #endregion
+
+            #region Form 2.8.1
+
+            //CreateMap<MonitoringDto, Form2_8_1>();
+            CreateMap<MonitoringDto, Form2_8_1>()
+                .ForMember(
+                    dest => dest.QualificationImprovedEmployees,
+                    opt => opt.MapFrom(src => src.QualificationImprovedEmployees));
 
             #endregion
         }

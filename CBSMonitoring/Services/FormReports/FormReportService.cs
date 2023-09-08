@@ -4,6 +4,8 @@ using CBSMonitoring.Models;
 using CBSMonitoring.Models.Forms;
 using ERPBlazor.Shared.Wrappers;
 using System.Reflection;
+using CBSMonitoring.Constants;
+using CBSMonitoring.Model;
 using Microsoft.EntityFrameworkCore;
 using static CBSMonitoring.DTOs.Requests;
 
@@ -23,23 +25,23 @@ namespace CBSMonitoring.Services.FormReports
             _mapper = mapper;
         }
 
-        public async Task<Result<string>> AddMonitoringReport<T>(MonitoringDto reportForm, string sectionNumber)
+        public async Task<Result<string>> AddMonitoringReport<T>(MonitoringDto reportForm, string sectionNumber, IFormCollection? fileItems = null)
             where T : OrgMonitoring
         {
-            T report = _mapper.Map<T>(reportForm);
-            Type type = report.GetType();
-
-            PropertyInfo createdDateTimeInfo = type.GetProperty(nameof(OrgMonitoring.CreatedDateTime))!;
-            createdDateTimeInfo.SetValue(report, DateTime.Now);
-
-            PropertyInfo sectionNumberInfo = type.GetProperty(nameof(OrgMonitoring.SectionNumber))!;
-            sectionNumberInfo.SetValue(report, sectionNumber);
-
+            
             try
             {
-                await _genericRepository.AddAsync(report);
+                T report = _mapper.Map<T>(reportForm);
+                Type type = report.GetType();
 
-                //if (reportForm.FileItem!.File is null)
+                report.CreatedDateTime = DateTime.Now;
+                report.SectionNumber = sectionNumber;
+
+                var result = await GetFilledEntity<OrgMonitoring>(sectionNumber, report, fileItems);
+
+                await _genericRepository.AddAsync(result.Data);
+
+                //if (fileItems is not null)
                 //{
                 //    return await Result<string>.SuccessAsync($"No file uploaded to form 1.1.1 report with id ={type.GetProperty("MonitoringId")?.GetValue(report, null)}");
                 //}
@@ -144,6 +146,79 @@ namespace CBSMonitoring.Services.FormReports
                 throw new NotSupportedException($"{type.Name} form doesn't have file property.");
         }
 
+        private async Task<Result<OrgMonitoring>> GetFilledEntity<T>(string sectionNumber, T report, IFormCollection? fileItems = null)
+        where T : OrgMonitoring
+        {
+            var Organization = await _genericRepository.GetByIdAsync<Organization>(report.OrganizationId) 
+                               ?? throw new NullReferenceException($"with id={report.OrganizationId} organization not found!");
+            
+            OrgMonitoringDto Dto = new(Organization.OrganizationName, report.Year, report.QuarterIndex, report.SectionNumber);
+
+            if (report.GetType() == typeof(Form2_8_1))
+            {
+                PropertyInfo qualificationImprovedEmployeeListProperty =
+                    report.GetType().GetProperty(nameof(Form2_8_1.QualificationImprovedEmployees))!;
+                List<QualificationImprovedEmployee> qualificationImprovedEmployees = (List<QualificationImprovedEmployee>)
+                    qualificationImprovedEmployeeListProperty.GetValue(report)!;
+
+                if (fileItems is null)
+                {
+                    throw new NotSupportedException($"No files received.");
+                }
+
+                List<FileModel> FileModelList = new();
+
+                foreach (var file in fileItems.Files)
+                {
+                    var fileItem = new FileItem(file);
+                    var result = await _fileWorkRoom.SaveFile(fileItem, Dto);
+
+                    FileModelList.Add(result.Data);
+                }
+
+                for (int i = 0; i < Math.Min(qualificationImprovedEmployees.Count, FileModelList.Count); i++)
+                {
+                    qualificationImprovedEmployees[i].Certificate = FileModelList[i];
+                }
+
+                qualificationImprovedEmployeeListProperty.SetValue(report, qualificationImprovedEmployees);
+
+                
+            }
+
+            if (report.GetType() == typeof(Form1_1_1))
+            {
+                PropertyInfo FileModelProperty = report.GetType().GetProperty(nameof(Form1_1_1.FileModel))!;
+
+                foreach (var file in fileItems.Files)
+                {
+                    var fileItem = new FileItem(file);
+                    var result = await _fileWorkRoom.SaveFile(fileItem, Dto);
+
+                    FileModelProperty.SetValue(report, result.Data);
+
+                    break;
+                }
+            }
+
+            if (report.GetType() == typeof(Form1_1_2))
+            {
+                PropertyInfo FileModelProperty = report.GetType().GetProperty(nameof(Form1_1_2.FileModel))!;
+
+                foreach (var file in fileItems.Files)
+                {
+                    var fileItem = new FileItem(file);
+                    var result = await _fileWorkRoom.SaveFile(fileItem, Dto);
+
+                    FileModelProperty.SetValue(report, result.Data);
+
+                    break;
+                }
+
+            }
+
+            return await Result<OrgMonitoring>.SuccessAsync(report);
+        }
 
     }
 }

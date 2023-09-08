@@ -51,10 +51,10 @@ namespace CBSMonitoring.Models
             }
         }
 
-        public async Task<Result<int>> SaveFile(FileItem file, int monitoringId)
+        public async Task<Result<FileModel>> SaveFile(FileItem file, OrgMonitoringDto dto)
         {
             string wwwRootPath = _webHostEnvironment.WebRootPath;
-            var basePath = Path.Combine(wwwRootPath + "/files/" + monitoringId.ToString());
+            var basePath = Path.Combine(wwwRootPath + "/files/" + dto.OrganizationName, dto.Year.ToString(), dto.QuarterIndex.ToString(), dto.SectionNumber);
             var date = DateTime.Now;
             bool basePathExists = Directory.Exists(basePath);
             if (!basePathExists) Directory.CreateDirectory(basePath);
@@ -74,18 +74,18 @@ namespace CBSMonitoring.Models
                 }
                 break;
             }
-            var systemPath = Path.Combine("/files/" + monitoringId.ToString(), temp + extension);
+            var systemPath = Path.Combine("/files/" + dto.OrganizationName, dto.Year.ToString(), dto.QuarterIndex.ToString(), dto.SectionNumber, temp + extension);
 
-            int fileModelId;
+            FileModel docFile;
 
             try
             {
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                await using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.File.CopyToAsync(fileStream);
                 }
 
-                FileModel docfile = new()
+                docFile = new()
                 {
                     FilePath = filePath,
                     SystemPath = systemPath,
@@ -97,22 +97,22 @@ namespace CBSMonitoring.Models
                     DocDate = file.DocDate
                 };
 
-                await _context.FileModels.AddAsync(docfile);
-                await _context.SaveChangesAsync();
+                //await _context.FileModels.AddAsync(docfile);
+                //await _context.SaveChangesAsync();
 
-                fileModelId = docfile.FileId;
+                //fileModelId = docfile.FileId;
 
             }
 
             catch (Exception ex)
             {
-                return await Result<int>.FailAsync($"Failed - {ex.Message}");
+                return await Result<FileModel>.FailAsync($"Failed - {ex.Message}");
             }
 
             //if (fileType.Equals(EDocFileTypeConst.MainDocument))
             //    QRCodeGenerate("dsfasfsd", filePath);
 
-            return await Result<int>.SuccessAsync(fileModelId);
+            return await Result<FileModel>.SuccessAsync(docFile);
         }
     }
 }

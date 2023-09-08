@@ -92,6 +92,31 @@ namespace CBSMonitoring.Data
             builder.Entity<QuestionBlock>()
                 .HasIndex(m => m.BlockNumber)
                 .IsUnique();
+
+            builder.Entity<Form2_2_2>()
+                .HasMany(a => a.TimelyExecutionOfPlans)
+                .WithOne(b => b.OrgMonitoring)
+                .HasForeignKey(b => b.OrgMonitoringId);
+
+            builder.Entity<Form2_8_1>()
+                .HasMany(a => a.QualificationImprovedEmployees)
+                .WithOne(b => b.OrgMonitoring)
+                .HasForeignKey(b => b.OrgMonitoringId);
+
+            builder.Entity<QualificationImprovedEmployee>()
+                .HasOne(a => a.Certificate)
+                .WithOne()  // assuming one-to-one relationship
+                .HasForeignKey<QualificationImprovedEmployee>(a => a.CertificateFileId);
+
+            builder.Entity<Form1_1_1>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form1_1_1>(a => a.File_1_1_1Id);
+
+            builder.Entity<Form1_1_2>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form1_1_2>(a => a.File_1_1_2Id);
         }
 
     }

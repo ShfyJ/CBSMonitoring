@@ -4,7 +4,6 @@
     {
         public bool? IsEmpsQualificationImproved { get; set; }
         public int? NumberOfEmpsQualificaitonImproved { get; set; }
-        public int[]? QualifImpEmpIds { get; set; }
         public ICollection<QualificationImprovedEmployee>? QualificationImprovedEmployees { get; set; }
     }
 }

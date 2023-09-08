@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CBSMonitoring.Models.Forms;
 
 namespace CBSMonitoring.Models
 {
@@ -20,7 +21,7 @@ namespace CBSMonitoring.Models
         public string CourseConductedOrgName { get; set; }
         public int OrgMonitoringId { get; set; }
         [ForeignKey(nameof(OrgMonitoringId))]
-        public OrgMonitoring OrgMonitoring { get; set; }
+        public Form2_8_1 OrgMonitoring { get; set; }
 
         public int CertificateFileId { get; set; }
         [ForeignKey(nameof(CertificateFileId))]

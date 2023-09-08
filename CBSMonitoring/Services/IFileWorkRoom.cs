@@ -6,7 +6,7 @@ namespace CBSMonitoring.Services
 {
     public interface IFileWorkRoom
     {
-        Task<Result<int>> SaveFile(FileItem file, int monitoringId);
+        Task<Result<FileModel>> SaveFile(FileItem file, OrgMonitoringDto dto);
         Task<Result<FileToStream>> GetFileAsStream(int id);
     }
 }

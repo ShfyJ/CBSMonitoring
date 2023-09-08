@@ -34,7 +34,10 @@ namespace CBSMonitoring.Controllers
         [HttpPost("AddReport/{sectionNumber}")]
         public async Task<IActionResult> AddReport([FromForm] MultipartFormDataWithMultipleFiles<MonitoringDto> monitoringReport, string sectionNumber)
         {
-            object[] args = { monitoringReport.Json, sectionNumber };
+            var args = monitoringReport.FileItems == null 
+                ? new object[]{ monitoringReport.Json, sectionNumber} 
+                : new object[]{ monitoringReport.Json, sectionNumber, monitoringReport.FileItems};
+
             const string methodName = nameof(IMonitoringFactory.AddMonitoringReport);
 
             return await InvokeGenericMethod(sectionNumber, methodName, args, 1);

@@ -105,7 +105,7 @@ namespace CBSMonitoring.DTOs
         public int? NumberOfDoneSectsInTime { get; set; } = null;
 
         /// <form>2.2.2</form>
-        public List<TimelyExecutionOfPlanRequest>? TimelyExecutionOfPlans { get; set; } = null;
+        public ICollection<TimelyExecutionOfPlanRequest>? TimelyExecutionOfPlans { get; set; } = null;
 
         #endregion
 
@@ -182,8 +182,7 @@ namespace CBSMonitoring.DTOs
         ///<form>2.8.1</form>
         public bool? IsEmpsQualificationImproved { get; set; } = null;
         public int? NumberOfEmpsQualificaitonImproved { get; set; } = null;
-        //public int[]? QualifImpEmpIds { get; set; }
-        public List<QualificationImprovedEmployee>? QualificationImprovedEmployees { get; set; } = null;
+        public ICollection<QualificationImprovedEmployeeRequest>? QualificationImprovedEmployees { get; set; } = null;
         #endregion
 
         #region Form 2.9
@@ -426,7 +425,13 @@ namespace CBSMonitoring.DTOs
         public string? DocNumber { get;}
         public DateTime? DocDate { get; }
 
-
+        public FileItem(IFormFile file, string description = "Файл", string? docNumber = null, DateTime? docDate = null)
+        {
+            File = file;
+            Description = description;
+            DocNumber = docNumber;
+            DocDate = docDate;
+        }
     }
 
 }
