@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CBSMonitoring.Models.Forms;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CBSMonitoring.Models
 {
@@ -16,6 +18,9 @@ namespace CBSMonitoring.Models
         public string BasePath { get; set; }
         public string ContentType { get; set; }
         #nullable enable
+        public int? Form2_2_2Id { get; set; }
+        [ForeignKey(nameof(Form2_2_2Id))]
+        public Form2_2_2? Form2_2_2 { get; set; }
         public string? DocNumber { get; set; }
         public DateTime? DocDate { get; set; }
         #nullable disable

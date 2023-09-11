@@ -98,6 +98,11 @@ namespace CBSMonitoring.Data
                 .WithOne(b => b.OrgMonitoring)
                 .HasForeignKey(b => b.OrgMonitoringId);
 
+            builder.Entity<Form2_2_2>()
+                .HasMany(a => a.FileModels)
+                .WithOne(b => b.Form2_2_2)
+                .HasForeignKey(b => b.Form2_2_2Id);
+
             builder.Entity<Form2_8_1>()
                 .HasMany(a => a.QualificationImprovedEmployees)
                 .WithOne(b => b.OrgMonitoring)
@@ -117,6 +122,36 @@ namespace CBSMonitoring.Data
                 .HasOne(a => a.FileModel)
                 .WithOne()
                 .HasForeignKey<Form1_1_2>(a => a.File_1_1_2Id);
+
+            builder.Entity<Form1_1_3>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form1_1_3>(a => a.File_1_1_3Id);
+
+            builder.Entity<Form2_1_1>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form2_1_1>(a => a.File_2_1_1Id);
+
+            builder.Entity<Form2_1_2>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form2_1_2>(a => a.File_2_1_2Id);
+
+            builder.Entity<Form2_2_1>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form2_2_1>(a => a.File_2_2_1Id);
+
+            builder.Entity<Form2_3_1>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form2_3_1>(a => a.File_2_3_1Id);
+
+            builder.Entity<Form2_3_2>()
+                .HasOne(a => a.FileModel)
+                .WithOne()
+                .HasForeignKey<Form2_3_2>(a => a.File_2_3_2Id);
         }
 
     }

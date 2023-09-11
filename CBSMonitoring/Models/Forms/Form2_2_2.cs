@@ -4,6 +4,7 @@
     {
         #nullable enable
         public ICollection<TimelyExecutionOfPlan>? TimelyExecutionOfPlans { get; set; }
+        public ICollection<FileModel>? FileModels { get; set; }
 
     }
 }
