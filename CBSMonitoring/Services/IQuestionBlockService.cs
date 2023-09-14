@@ -1,5 +1,7 @@
 ﻿using CBSMonitoring.DTOs;
 using ERPBlazor.Shared.Wrappers;
+using static CBSMonitoring.DTOs.Requests;
+using static CBSMonitoring.DTOs.Responses;
 
 namespace CBSMonitoring.Services
 {
@@ -9,6 +11,6 @@ namespace CBSMonitoring.Services
         Task<Result<string>> RemoveQuestionBlock(int questionBlockId);
         Task<Result<string>> UpdateQuestionBlock(QuestionBlockRequest questionBlock, int id);
         Task<Result<QuestionBlockResponse>> GetQuestionBlock(int questionBlockId);
-        Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(bool? status = null);
+        Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(LevelRequest request);
     }
 }

@@ -30,8 +30,35 @@ namespace CBSMonitoring.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationId"));
 
-                    b.Property<string>("OrganizationName")
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EXat")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Fax")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HeadFullName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("NumberOfEmployees")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RegulatoryLegalAct")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShortName")
                         .HasColumnType("text");
 
                     b.Property<bool>("Status")
@@ -195,6 +222,26 @@ namespace CBSMonitoring.Migrations
                     b.ToTable("FormSections");
                 });
 
+            modelBuilder.Entity("CBSMonitoring.Models.MonitoringIndicator", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MonitoringIndicators");
+                });
+
             modelBuilder.Entity("CBSMonitoring.Models.OrgMonitoring", b =>
                 {
                     b.Property<int>("MonitoringId")
@@ -293,13 +340,21 @@ namespace CBSMonitoring.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("IdicatorId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("Point")
+                        .HasColumnType("integer");
 
                     b.HasKey("BlockId");
 
                     b.HasIndex("BlockNumber")
                         .IsUnique();
+
+                    b.HasIndex("IdicatorId");
 
                     b.ToTable("QuestionBlocks");
                 });
@@ -1692,6 +1747,17 @@ namespace CBSMonitoring.Migrations
                     b.Navigation("OrgMonitoring");
                 });
 
+            modelBuilder.Entity("CBSMonitoring.Models.QuestionBlock", b =>
+                {
+                    b.HasOne("CBSMonitoring.Models.MonitoringIndicator", "MonitoringIndicator")
+                        .WithMany("QuestionBlocks")
+                        .HasForeignKey("IdicatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MonitoringIndicator");
+                });
+
             modelBuilder.Entity("CBSMonitoring.Models.TimelyExecutionOfPlan", b =>
                 {
                     b.HasOne("CBSMonitoring.Models.Forms.Form2_2_2", "OrgMonitoring")
@@ -1834,6 +1900,11 @@ namespace CBSMonitoring.Migrations
             modelBuilder.Entity("CBSMonitoring.Models.FormSection", b =>
                 {
                     b.Navigation("FormItems");
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.MonitoringIndicator", b =>
+                {
+                    b.Navigation("QuestionBlocks");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.QuestionBlock", b =>

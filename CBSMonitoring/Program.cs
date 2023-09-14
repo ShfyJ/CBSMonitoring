@@ -54,6 +54,7 @@ builder.Services.AddScoped<IFormItemService, FormItemService>();
 builder.Services.AddScoped<IFormSectionService, FormSectionService>();
 builder.Services.AddScoped<IFileWorkRoom, FileWorkRoom>();
 builder.Services.AddScoped<IMonitoringFactory, FormReportService>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<TokenService, TokenService>();
 
 
@@ -106,6 +107,17 @@ builder.Services
         };
     });
 
+builder.Services
+    .AddCors(opt =>
+    {
+        opt.AddPolicy(name: "CorsPolicy", builder =>
+        {
+            builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+    });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -116,6 +128,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

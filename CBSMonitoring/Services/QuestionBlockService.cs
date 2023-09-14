@@ -2,6 +2,9 @@
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
+using Microsoft.EntityFrameworkCore;
+using static CBSMonitoring.DTOs.Requests;
+using static CBSMonitoring.DTOs.Responses;
 
 namespace CBSMonitoring.Services
 {
@@ -31,26 +34,44 @@ namespace CBSMonitoring.Services
             return await Result<string>.SuccessAsync($"Success");
         }
 
-        public async Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(bool? isActive)
+        public async Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(LevelRequest request)
         {
             try
             {
-                var questionBlocks = await _qbRepository.GetAllAsync<QuestionBlock>();
-                if (isActive is not null)
+                var questionBlocks = await _qbRepository.GetAllByParameterAsync<QuestionBlock>
+                                                (q => q.IsActive, query => query.Include(q => q.FormSections));
+
+                List<QuestionBlockResponse> response = new();
+
+                int sectionsCount;
+                int filledSectionsCount = 0;
+
+                foreach (var qb in questionBlocks)
                 {
-                    questionBlocks = questionBlocks.Where(q => q.IsActive).ToList();
+                    sectionsCount = qb.FormSections!.Count();
+
+                    foreach (var section in qb.FormSections!)
+                    {
+                        if (await _qbRepository.GetFirstByParameterAsync<OrgMonitoring>(o => o.SectionNumber == section.SectionNumber
+                                                     && o.OrganizationId == request.OrganizationId && o.Year == request.Year 
+                                                     && o.QuarterIndex == request.Quarter) is not null)
+                        {
+                            filledSectionsCount++;
+                        }
+                    }
+
+                    var completion = ((double)filledSectionsCount / sectionsCount) * 100;
+
+                    var responseItem = new QuestionBlockResponse(qb.BlockId, qb.BlockNumber, qb.BlockName, 
+                                            qb.IsActive, qb.Point, sectionsCount, completion);
+
+                    response.Add(responseItem);
+
+                    filledSectionsCount = 0;
                 }
 
-                List<QuestionBlockResponse> qbDTOs = new();
 
-                foreach (var questionBlock in questionBlocks)
-                {
-                    QuestionBlockResponse questionBlockResponse = _mapper.Map<QuestionBlockResponse>(questionBlock);
-
-                    qbDTOs.Add(questionBlockResponse);
-                }
-
-                return await Result<IEnumerable<QuestionBlockResponse>>.SuccessAsync(qbDTOs);
+                return await Result<IEnumerable<QuestionBlockResponse>>.SuccessAsync(response);
             }
 
             catch (Exception ex)
@@ -101,5 +122,6 @@ namespace CBSMonitoring.Services
 
             return await Result<string>.SuccessAsync($"Success");
         }
+        
     }
 }

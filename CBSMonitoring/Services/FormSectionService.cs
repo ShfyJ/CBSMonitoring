@@ -2,6 +2,8 @@
 using CBSMonitoring.DTOs;
 using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
+using static CBSMonitoring.DTOs.Requests;
+using static CBSMonitoring.DTOs.Responses;
 
 namespace CBSMonitoring.Services
 {
@@ -63,17 +65,32 @@ namespace CBSMonitoring.Services
             return await Result<string>.SuccessAsync($"success");
         }
 
-        public async Task<Result<IEnumerable<FormSectionResponse>>> GetAllFormSectionsByQuestionBlockId(int questionBlockId)
+        public async Task<Result<IEnumerable<FormSectionResponse>>> GetAllFormSectionsByQuestionBlockId(int questionBlockId, LevelRequest request)
         {
-            var sections = await _fsRepository.GetAllAsync<FormSection>();
-            sections = sections.Where(s => s.QuestionBlockId == questionBlockId);
+            var sections = await _fsRepository.GetAllByParameterAsync<FormSection>(f => f.IsActive && f.QuestionBlockId == questionBlockId);
+            
             List<FormSectionResponse> fsResponseList = new();
+            
             foreach (var section in sections)
             {
-                FormSectionResponse fsResponse = _mapper.Map<FormSectionResponse>(section);
+                bool isFilled = false;
+
+                if (await _fsRepository.GetFirstByParameterAsync<OrgMonitoring>(o => o.SectionNumber == section.SectionNumber
+                                                && o.OrganizationId == request.OrganizationId && o.Year == request.Year
+                                                && o.QuarterIndex == request.Quarter) is not null)
+                {
+                    isFilled = true;
+                }
+
+                FormSectionResponse fsResponse = _mapper.Map<FormSectionResponse>(section, opt => opt.AfterMap((src, dest) =>
+                {
+                    dest.IsFilled = isFilled;
+                }));
 
                 fsResponseList.Add(fsResponse);
+
             }
+
             return await Result<IEnumerable<FormSectionResponse>>.SuccessAsync(fsResponseList);
         }
 

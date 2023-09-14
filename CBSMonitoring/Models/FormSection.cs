@@ -11,7 +11,7 @@ namespace CBSMonitoring.Models
         public int SectionId { get; set; }
         [Required(ErrorMessage = "IsActive is must")]
         public bool IsActive { get; set; }
-#nullable disable
+        #nullable disable
         [Required(ErrorMessage = "SectionName is must")]
         public string SectionName { get; set; }
         [Required(ErrorMessage = "SectionNumber is must")]
@@ -19,7 +19,7 @@ namespace CBSMonitoring.Models
         public int QuestionBlockId { get; set; }
         [ForeignKey(nameof(QuestionBlockId))]
         public QuestionBlock QuestionBlock { get; set; }
-#nullable enable
+        #nullable enable
         public ICollection<FormItem>? FormItems { get; set; }
 
     }

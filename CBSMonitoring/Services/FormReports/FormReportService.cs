@@ -8,6 +8,7 @@ using CBSMonitoring.Constants;
 using CBSMonitoring.Model;
 using Microsoft.EntityFrameworkCore;
 using static CBSMonitoring.DTOs.Requests;
+using CBSMonitoring.DTOs.FormDtos;
 
 namespace CBSMonitoring.Services.FormReports
 {
@@ -32,14 +33,26 @@ namespace CBSMonitoring.Services.FormReports
             try
             {
                 T report = _mapper.Map<T>(reportForm);
-                Type type = report.GetType();
 
                 report.CreatedDateTime = DateTime.Now;
                 report.SectionNumber = sectionNumber;
 
-                var result = await GetFilledEntity<OrgMonitoring>(report, fileItems);
+                var result = await GetFilledEntity(report, fileItems);
 
-                await _genericRepository.AddAsync(result.Data);
+                var entity = await _genericRepository.GetFirstByParameterAsync<T>(e => e.SectionNumber == sectionNumber
+                                                        && e.Year == report.Year && e.QuarterIndex == report.QuarterIndex
+                                                        && e.OrganizationId == report.OrganizationId);
+
+                if (entity is null)
+                {
+
+                    await _genericRepository.AddAsync(result.Data);
+                }
+
+                else
+                {
+                    await ReplaceExistingEntityWithNewOne<T>(result.Data, entity);
+                }
 
             }
 
@@ -85,6 +98,7 @@ namespace CBSMonitoring.Services.FormReports
             {
                 await _genericRepository.UpdateAsync(report);
             }
+
             catch (Exception ex)
             {
                 return await Result<string>.FailAsync(ex.Message);
@@ -98,20 +112,46 @@ namespace CBSMonitoring.Services.FormReports
             where T : OrgMonitoring
             where TDto : class
         {
-            var year = DateTime.Now.Year;
-            var quarter = (DateTime.Now.Month - 1) / 3 + 1;
-
-            if (reportRequest.Year != 0)
+            OrgMonitoring? report = reportRequest.SectionNumber switch
             {
-                year = reportRequest.Year;
-                quarter = reportRequest.Quarter;
-            }
-
-            var report = await _genericRepository.GetByParameterAsync<T>(e => e.Year == year && e.QuarterIndex == quarter, 
-                                                                            query => query.Include(e => e.Organization));
+                FormType.Form1_1_1 => await _genericRepository.GetFirstByParameterAsync<Form1_1_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form1_1_2 => await _genericRepository.GetFirstByParameterAsync<Form1_1_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form1_1_3 => await _genericRepository.GetFirstByParameterAsync<Form1_1_3>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_1_1 => await _genericRepository.GetFirstByParameterAsync<Form2_1_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_1_2 => await _genericRepository.GetFirstByParameterAsync<Form2_1_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_2_1 => await _genericRepository.GetFirstByParameterAsync<Form2_2_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_2_2 => await _genericRepository.GetFirstByParameterAsync<Form2_2_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.TimelyExecutionOfPlans).Include(e => e.FileModels)),
+                FormType.Form2_3_1 => await _genericRepository.GetFirstByParameterAsync<Form2_3_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_3_2 => await _genericRepository.GetFirstByParameterAsync<Form2_3_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.FileModel)),
+                FormType.Form2_8_1 => await _genericRepository.GetFirstByParameterAsync<Form2_8_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization).Include(e => e.QualificationImprovedEmployees)),
+                _ => await _genericRepository.GetFirstByParameterAsync<T>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                                                                                            && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                            query => query.Include(e => e.Organization)),
+            };
 
             if (report == null)
-                return await Result<object>.FailAsync($"Current quarter report with section number ={reportRequest.SectionNumber} not found!");
+                return await Result<object>.FailAsync($"Current quarter report with section number = {reportRequest.SectionNumber} " +
+                                                        $"and organization Id = {reportRequest.OrganizationId} not found!");
 
             var monitoringDto = _mapper.Map<TDto>(report);
 
@@ -124,7 +164,7 @@ namespace CBSMonitoring.Services.FormReports
             var Organization = await _genericRepository.GetByIdAsync<Organization>(report.OrganizationId) 
                                ?? throw new NullReferenceException($"with id={report.OrganizationId} organization not found!");
             
-            OrgMonitoringDto Dto = new(Organization.OrganizationName, report.Year, report.QuarterIndex, report.SectionNumber);
+            OrgMonitoringDto Dto = new(Organization.FullName, report.Year, report.QuarterIndex, report.SectionNumber);
 
             var fileModels = await ProcessMultipleFiles(fileItems, Dto);
 
@@ -225,6 +265,102 @@ namespace CBSMonitoring.Services.FormReports
             }
 
             return fileModels;
+        }
+
+        private async Task ReplaceExistingEntityWithNewOne<T>(OrgMonitoring newEntity, T entity)
+            where T : OrgMonitoring
+        {
+            object? oldEntity = null;
+            int oldEntityId = entity.MonitoringId;
+            switch(newEntity)
+            {
+                case Form1_1_1:
+                    
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form1_1_1>(e => e.MonitoringId == oldEntityId, 
+                                                                               query => query.Include(e => e.FileModel));
+                    break;
+
+                case Form1_1_2:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form1_1_2>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form1_1_3:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form1_1_3>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_1_1:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_1_1>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_1_2:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_1_2>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_2_1:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_2_1>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_2_2:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_2_2>(e => e.MonitoringId == oldEntityId,
+                                                                                query => query.Include(e => e.TimelyExecutionOfPlans));
+
+                    break;
+
+                case Form2_3_1:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_3_1>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_3_2:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_3_2>(e => e.MonitoringId == oldEntityId,
+                                                                               query => query.Include(e => e.FileModel));
+
+                    break;
+
+                case Form2_8_1:
+
+                    oldEntity = await _genericRepository.GetFirstByParameterAsync<Form2_8_1>(e => e.MonitoringId == oldEntityId,
+                                                                                query => query.Include(e => e.QualificationImprovedEmployees)
+                                                                                .ThenInclude(q => q.Certificate));
+
+                    break;
+
+                default:
+
+                    oldEntity = entity;
+
+                    break;
+
+            }
+
+            if (oldEntity == null)
+            {
+                await _genericRepository.AddAsync(newEntity);
+                return;
+            }
+
+            _mapper.Map(newEntity, oldEntity);
+
+            await _genericRepository.UpdateAsync(oldEntity);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CBSMonitoring.Models
 {
@@ -8,14 +9,19 @@ namespace CBSMonitoring.Models
     {
         [Key]
         public int BlockId { get; set; }
-#nullable disable
+        #nullable disable
         [Required(ErrorMessage = "BlockNumber is must")]
         public string BlockNumber { get; set; }
         [Required(ErrorMessage = "BlockName is must")]
         public string BlockName { get; set; }
-        [Required(ErrorMessage = "|IsActive is must")]
+        [Required(ErrorMessage = "IsActive is must")]
         public bool IsActive { get; set; }
-#nullable enable
+        [Required(ErrorMessage = "Point is must")]
+        public int Point { get; set; } = 0;
+        public int IdicatorId { get; set; }
+        [ForeignKey(nameof(IdicatorId))]
+        public MonitoringIndicator MonitoringIndicator { get; set; }
+        #nullable enable
         public ICollection<FormSection>? FormSections { get; set; }
 
     }

@@ -2,6 +2,7 @@
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static CBSMonitoring.DTOs.Requests;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -49,10 +50,10 @@ namespace CBSMonitoring.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetQuestionBlocks/{status}")]
-        public async Task<IActionResult> GetQuesionBlocks(bool? status = null)
+        [HttpPost("GetQuestionBlocks")]
+        public async Task<IActionResult> GetQuestionBlocks([FromBody] LevelRequest request)
         {
-            var result = await _qbService.GetQuestionBlocks(status);
+            var result = await _qbService.GetQuestionBlocks(request);
 
             if (!result.Succeeded)
             {

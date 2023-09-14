@@ -8,7 +8,7 @@ namespace CBSMonitoring.Models
     {
         [Key]
         public int Id { get; set; }
-#nullable disable
+        #nullable disable
         [Required]
         public string FullName { get; set; }
         [Required]

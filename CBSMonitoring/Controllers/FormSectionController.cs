@@ -2,6 +2,7 @@
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static CBSMonitoring.DTOs.Requests;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -33,10 +34,10 @@ namespace CBSMonitoring.Controllers
         }
 
         // GET api/<FormSectionController>/5
-        [HttpGet("GetFormSectionsByQbId/{id}")]
-        public async Task<IActionResult> GetFormSectionsByQbId(int id)
+        [HttpPost("GetFormSectionsByQbId/{id}")]
+        public async Task<IActionResult> GetFormSectionsByQbId(LevelRequest request, int id)
         {
-            var result = await _fsService.GetAllFormSectionsByQuestionBlockId(id);
+            var result = await _fsService.GetAllFormSectionsByQuestionBlockId(id, request);
 
             if (!result.Succeeded)
             {

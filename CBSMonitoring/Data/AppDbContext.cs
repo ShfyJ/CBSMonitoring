@@ -21,6 +21,7 @@ namespace CBSMonitoring.Data
         public DbSet<QualificationImprovedEmployee> QIEmployees { get; set; }
         public DbSet<FormItemType> FormItemTypes { get; set; }
         public DbSet<TimelyExecutionOfPlan> TimelyExecutionOfPlans { get; set; }
+        public DbSet<MonitoringIndicator> MonitoringIndicators { get; set; }
 
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1
@@ -92,6 +93,21 @@ namespace CBSMonitoring.Data
             builder.Entity<QuestionBlock>()
                 .HasIndex(m => m.BlockNumber)
                 .IsUnique();
+
+            builder.Entity<QuestionBlock>()
+                .HasMany(qblock => qblock.FormSections)
+                .WithOne(section => section.QuestionBlock)
+                .HasForeignKey(section => section.QuestionBlockId);
+            
+            builder.Entity<FormSection>()
+                .HasMany(section => section.FormItems)
+                .WithOne(item => item.FormSection)
+                .HasForeignKey(item => item.FormSectionId);
+
+            builder.Entity<MonitoringIndicator>()
+                .HasMany(indicator => indicator.QuestionBlocks)
+                .WithOne(block => block.MonitoringIndicator)
+                .HasForeignKey(block => block.IdicatorId);
 
             builder.Entity<Form2_2_2>()
                 .HasMany(a => a.TimelyExecutionOfPlans)

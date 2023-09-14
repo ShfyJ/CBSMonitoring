@@ -5,6 +5,6 @@ namespace CBSMonitoring.Webframework
 {
     public class JsonConfig
     {
-        public JsonSerializerSettings JsonSerializerSettings { get; set; }
+        public JsonSerializerSettings? JsonSerializerSettings { get; set; }
     }
 }
