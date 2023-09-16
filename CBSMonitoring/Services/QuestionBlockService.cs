@@ -34,49 +34,58 @@ namespace CBSMonitoring.Services
             return await Result<string>.SuccessAsync($"Success");
         }
 
-        public async Task<Result<IEnumerable<QuestionBlockResponse>>> GetQuestionBlocks(LevelRequest request)
+        public async Task<Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>> GetQuestionBlocksWithIndicators(LevelRequest request)
         {
             try
             {
-                var questionBlocks = await _qbRepository.GetAllByParameterAsync<QuestionBlock>
-                                                (q => q.IsActive, query => query.Include(q => q.FormSections));
+                var indicators = await _qbRepository.GetAllByParameterAsync<MonitoringIndicator>(e => e.IsActive,
+                                    query => query.Include(e => e.QuestionBlocks).ThenInclude(q => q.FormSections));
 
-                List<QuestionBlockResponse> response = new();
+                List<MonitoringIndicatorWithQbsResponse> response = new();
+                
 
                 int sectionsCount;
                 int filledSectionsCount = 0;
 
-                foreach (var qb in questionBlocks)
+                foreach (var item in indicators)
                 {
-                    sectionsCount = qb.FormSections!.Count();
+                    List<QuestionBlockResponse> questionBlocks = new();
 
-                    foreach (var section in qb.FormSections!)
+                    foreach (var qb in item.QuestionBlocks)
                     {
-                        if (await _qbRepository.GetFirstByParameterAsync<OrgMonitoring>(o => o.SectionNumber == section.SectionNumber
-                                                     && o.OrganizationId == request.OrganizationId && o.Year == request.Year 
-                                                     && o.QuarterIndex == request.Quarter) is not null)
+                        sectionsCount = qb.FormSections!.Count;
+
+                        foreach (var section in qb.FormSections!)
                         {
-                            filledSectionsCount++;
+                            if (await _qbRepository.GetFirstByParameterAsync<OrgMonitoring>(o => o.SectionNumber == section.SectionNumber
+                                                         && o.OrganizationId == request.OrganizationId && o.Year == request.Year
+                                                         && o.QuarterIndex == request.Quarter) is not null)
+                            {
+                                filledSectionsCount++;
+                            }
                         }
+
+                        var completion = ((double)filledSectionsCount / sectionsCount) * 100;
+
+                        var qbItem = new QuestionBlockResponse(qb.BlockId, qb.BlockNumber, qb.BlockName,
+                                                qb.IsActive, qb.Point, sectionsCount, completion);
+
+                        questionBlocks.Add(qbItem);
+
+                        filledSectionsCount = 0;
                     }
 
-                    var completion = ((double)filledSectionsCount / sectionsCount) * 100;
-
-                    var responseItem = new QuestionBlockResponse(qb.BlockId, qb.BlockNumber, qb.BlockName, 
-                                            qb.IsActive, qb.Point, sectionsCount, completion);
-
+                    var responseItem = new MonitoringIndicatorWithQbsResponse(item.Id, item.Name, item.IsActive, questionBlocks);
                     response.Add(responseItem);
-
-                    filledSectionsCount = 0;
                 }
 
 
-                return await Result<IEnumerable<QuestionBlockResponse>>.SuccessAsync(response);
+                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.SuccessAsync(response);
             }
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<QuestionBlockResponse>>.FailAsync(ex.Message);
+                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync(ex.Message);
             }
         }
 
@@ -122,6 +131,7 @@ namespace CBSMonitoring.Services
 
             return await Result<string>.SuccessAsync($"Success");
         }
+        
         
     }
 }

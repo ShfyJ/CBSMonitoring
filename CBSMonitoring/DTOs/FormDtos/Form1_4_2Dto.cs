@@ -1,10 +1,15 @@
-﻿namespace CBSMonitoring.DTOs.FormDtos
+﻿using CBSMonitoring.Webframework;
+
+namespace CBSMonitoring.DTOs.FormDtos
 {
     public class Form1_4_2Dto : BaseFormDto
     {
         #nullable disable
-        public bool IsComissionPresent { get; set; }
-        public string ComissionDocNumber { get; set; }
-        public DateTime ComissionDocDate { get; set; }
+        [PropertyOrder(1)]
+        public bool IsComissionPresent { get; init; }
+        [PropertyOrder(2)]
+        public string ComissionDocNumber { get; init; }
+        [PropertyOrder(3)]
+        public DateTime ComissionDocDate { get; init; }
     }
 }

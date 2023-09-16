@@ -15,6 +15,21 @@ namespace CBSMonitoring.Helpers
 
         public AutoMapper()
         {
+            #region Monitoring Indicator
+
+            CreateMap<MonitoringIndicator, MonitoringIndicatorWithQbsResponse>()
+                .ForMember(dest => dest.QuestionBlocks, opt => opt.MapFrom(src => src.QuestionBlocks));
+            CreateMap<MonitoringIndicator, MonitoringIndicatorResponse>()
+                .ForMember(dest => dest.QbCount, opt => opt.MapFrom(src => src.QuestionBlocks == null ? 0 : src.QuestionBlocks.Count));
+            
+            /*</> Some other conditional mapping options -->
+            CreateMap<MonitoringIndicator, MonitoringIndicatorResponse>()
+                .ForMember(dest => dest.QbCount, opt => opt.MapFrom((src, dest) => src.QuestionBlocks?.Count ?? 0));
+            CreateMap<MonitoringIndicator, MonitoringIndicatorResponse>()
+                .ForMember(dest => dest.QbCount, opt => opt.MapFrom(src => MapQbCount(src))); */
+
+            #endregion
+
             #region Organization
 
             CreateMap<OrganizationRequest, Organization>();
@@ -59,7 +74,8 @@ namespace CBSMonitoring.Helpers
 
             #region Question Block
             CreateMap<QuestionBlockRequest, QuestionBlock>();
-            CreateMap<QuestionBlock, QuestionBlockResponse>();
+            CreateMap<QuestionBlock, QuestionBlockResponse>()
+                .ForMember(dest => dest.SectionCount, opt => opt.MapFrom(src => src.FormSections.Count));
             #endregion
 
             #region Form 1.1.1

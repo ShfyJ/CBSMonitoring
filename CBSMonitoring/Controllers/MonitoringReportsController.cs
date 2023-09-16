@@ -22,10 +22,11 @@ namespace CBSMonitoring.Controllers
         private readonly FormFactory _formFactory;
         private readonly IMonitoringFactory _monitoringFactory;
         private readonly Type _classType;
-        public MonitoringReportsController(IGenericRepository gr, IMapper mp, IFileWorkRoom fw)
+        public MonitoringReportsController(IMonitoringFactory monitoringFactory)
         {
             _formFactory = new ConcreteFormFactory();
-            _monitoringFactory = new FormReportService(gr, fw, mp);
+            _monitoringFactory = monitoringFactory;
+            //_monitoringFactory = new FormReportService(gr, fw, mp);
             _classType = typeof(IMonitoringFactory);
 
         }
@@ -34,7 +35,7 @@ namespace CBSMonitoring.Controllers
         [HttpPost("AddReport/{sectionNumber}")]
         public async Task<IActionResult> AddReport([FromForm] MultipartFormDataWithMultipleFiles<MonitoringDto> monitoringReport, string sectionNumber)
         {
-            var args = monitoringReport.FileItems == null 
+            var args = monitoringReport.FileItems == null
                 ? new object[]{ monitoringReport.Json, sectionNumber} 
                 : new object[]{ monitoringReport.Json, sectionNumber, monitoringReport.FileItems};
 
@@ -52,7 +53,15 @@ namespace CBSMonitoring.Controllers
 
             return await InvokeGenericMethod(reportRequest.SectionNumber, methodName, args, 2);
         }
+        
+        [HttpPost("GetQuarterReportByQb")]
+        public async Task<IActionResult> GetQuarterReportByQb([FromBody] ReportRequestByQb reportRequest)
+        {
 
+            var result = await _monitoringFactory.GetQuarterReportByQb(reportRequest);
+
+            return Ok(result);
+        }
         [HttpPost("UpdateReport/{sectionNumber}")]
         public async Task<IActionResult> UpdateReport(string sectionNumber, int monitoringId, [FromForm] MonitoringDto monitoringDto)
         {
@@ -99,12 +108,13 @@ namespace CBSMonitoring.Controllers
                 if (!Convert.ToBoolean(objectProperty!.GetValue(returnedObject)))
                     return BadRequest(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
 
-                return Ok(returnedObject);
+                return Ok(returnedObject.GetType().GetProperty("Data").GetValue(returnedObject));
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }

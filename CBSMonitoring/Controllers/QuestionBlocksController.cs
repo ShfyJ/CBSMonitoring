@@ -53,7 +53,7 @@ namespace CBSMonitoring.Controllers
         [HttpPost("GetQuestionBlocks")]
         public async Task<IActionResult> GetQuestionBlocks([FromBody] LevelRequest request)
         {
-            var result = await _qbService.GetQuestionBlocks(request);
+            var result = await _qbService.GetQuestionBlocksWithIndicators(request);
 
             if (!result.Succeeded)
             {

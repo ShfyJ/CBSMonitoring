@@ -9,6 +9,11 @@ using CBSMonitoring.Model;
 using Microsoft.EntityFrameworkCore;
 using static CBSMonitoring.DTOs.Requests;
 using CBSMonitoring.DTOs.FormDtos;
+using CBSMonitoring.Webframework;
+using System.Text.Json;
+using Newtonsoft.Json;
+using static CBSMonitoring.DTOs.Responses;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace CBSMonitoring.Services.FormReports
 {
@@ -155,7 +160,18 @@ namespace CBSMonitoring.Services.FormReports
 
             var monitoringDto = _mapper.Map<TDto>(report);
 
-            return await Result<object>.SuccessAsync(monitoringDto);
+            var sectionNumber = monitoringDto.GetType().GetProperty(nameof(BaseFormDto.SectionNumber))!.GetValue(monitoringDto)!.ToString();
+            var section = await _genericRepository.GetFirstByParameterAsync<FormSection>(e => e.SectionNumber == sectionNumber);
+            if (section == null)
+                return await Result<object>.FailAsync($"Section with id={sectionNumber} not found!");
+
+            var items = await _genericRepository.GetAllByParameterAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
+                                                                            query => query.Include(e => e.FormItemType));
+
+            List<ReportResponse> result = GetPropertiesAndValues(monitoringDto, items.ToArray());
+            var jsonString = JsonConvert.SerializeObject(result);
+
+            return await Result<object>.SuccessAsync(result);
         }
 
         private async Task<Result<OrgMonitoring>> GetFilledEntity<T>(T report, IFormCollection? fileItems = null)
@@ -172,19 +188,30 @@ namespace CBSMonitoring.Services.FormReports
 
             switch (report)
             {
+
                 case Form1_1_1:
 
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_1.FileModel))!;
+                    
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
 
                 case Form1_1_2:
-                    
+
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_2.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
 
                 case Form1_1_3:
+
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
 
                     fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_3.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
@@ -192,11 +219,17 @@ namespace CBSMonitoring.Services.FormReports
 
                 case Form2_1_1:
 
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form2_1_1.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
 
                 case Form2_1_2:
+
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
 
                     fileModelProperty = report.GetType().GetProperty(nameof(Form2_1_2.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
@@ -204,10 +237,17 @@ namespace CBSMonitoring.Services.FormReports
 
                 case Form2_2_1:
 
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form2_2_1.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
+
                 case Form2_2_2:
+
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
 
                     PropertyInfo relatedFiles =
                     report.GetType().GetProperty(nameof(Form2_2_2.FileModels))!;
@@ -217,17 +257,26 @@ namespace CBSMonitoring.Services.FormReports
 
                 case Form2_3_1:
 
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form2_3_1.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
 
                 case Form2_3_2:
 
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
+
                     fileModelProperty = report.GetType().GetProperty(nameof(Form2_3_2.FileModel))!;
                     fileModelProperty.SetValue(report, fileModels.First());
                     break;
 
                 case Form2_8_1:
+
+                    if (fileModels.Count == 0)
+                        throw new NotSupportedException($"No files received!");
 
                     PropertyInfo qualificationImprovedEmployeeListProperty =
                     report.GetType().GetProperty(nameof(Form2_8_1.QualificationImprovedEmployees))!;
@@ -361,6 +410,55 @@ namespace CBSMonitoring.Services.FormReports
             _mapper.Map(newEntity, oldEntity);
 
             await _genericRepository.UpdateAsync(oldEntity);
+        }
+
+        private static List<ReportResponse> GetPropertiesAndValues(object obj, FormItem[] items)
+        {
+            List<ReportResponse> list = new ();
+
+            bool ToBeDisplayed;
+            string PropertyLabel;
+            string ItemType;
+
+            var Properties = obj.GetType().GetProperties();
+
+            ///</> item.Count() is considered less than Properties.Count() </>
+
+            for (int i = 0; i < Properties.Count(); i++)
+            {
+                var orderAttr = Properties[i].GetCustomAttribute<PropertyOrderAttribute>();
+
+                if (Properties[i].DeclaringType != typeof(BaseFormDto))
+                {
+                    ToBeDisplayed = true;
+                    PropertyLabel = items[i].ItemLabel;
+                    ItemType = items[i].FormItemType.TypeName;
+                }
+
+                else
+                {
+                    PropertyLabel = Properties[i].Name;
+                    ToBeDisplayed = false;
+                    ItemType = string.Empty;
+                }
+
+                if (orderAttr != null)
+                {
+                    list.Add(new ReportResponse(PropertyLabel, Properties[i].GetValue(obj, null)!, orderAttr.Order, ItemType, ToBeDisplayed));
+                }
+
+                else
+                {
+                    list.Add(new ReportResponse(PropertyLabel, Properties[i].GetValue(obj, null)!, int.MaxValue, ItemType, ToBeDisplayed));
+                }
+            }
+
+            return list;
+        }
+
+        public Task<Result<object>> GetQuarterReportByQb(ReportRequestByQb reportRequest)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿namespace CBSMonitoring.DTOs.FormDtos
+﻿using CBSMonitoring.Webframework;
+
+namespace CBSMonitoring.DTOs.FormDtos
 {
     public class Form1_1_5Dto : BaseFormDto
     {
-        #nullable disable
-        public bool IsAuditConducted { get; set; }
+        [PropertyOrder(1)]
+        public bool IsAuditConducted { get; init; }
     }
 }

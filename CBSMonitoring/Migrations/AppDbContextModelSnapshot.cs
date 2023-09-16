@@ -146,6 +146,9 @@ namespace CBSMonitoring.Migrations
                     b.Property<int>("ItemTypeId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("LabelInDisplay")
+                        .HasColumnType("text");
+
                     b.Property<int?>("ListIndex")
                         .HasColumnType("integer");
 

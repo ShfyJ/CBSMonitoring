@@ -89,6 +89,7 @@ namespace CBSMonitoring.Models
                 {
                     FilePath = filePath,
                     SystemPath = systemPath,
+                    BasePath = basePath,
                     Name = temp,
                     Extension = extension,
                     ContentType = file.File.ContentType,

@@ -17,6 +17,7 @@ namespace CBSMonitoring.Models
         #nullable disable
         public bool IsRequired { get; set; } = true;
         public string ItemLabel { get; set; }
+        public string LabelInDisplay { get; set; }
         public string ItemName { get; set; }
         public int ItemTypeId { get; set; }
         [ForeignKey(nameof(ItemTypeId))]

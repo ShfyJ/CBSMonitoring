@@ -1,12 +1,17 @@
-﻿namespace CBSMonitoring.DTOs.FormDtos
+﻿using CBSMonitoring.Webframework;
+
+namespace CBSMonitoring.DTOs.FormDtos
 {
     public class Form2_2_1Dto : BaseFormDto
     {
         #nullable disable
-        public int NumberOfSectsInActionPlan { get; set; }
-        public int NumberOfDoneSects { get; set; }
-        public int NumberOfDoneSectsInTime { get; set; }
-        public string FileDescription { get; set; } = "Файл";
-        public int FileId { get; set; }
+        [PropertyOrder(1)]
+        public int NumberOfSectsInActionPlan { get; init; }
+        [PropertyOrder(2)]
+        public int NumberOfDoneSects { get; init; }
+        [PropertyOrder(3)]
+        public int NumberOfDoneSectsInTime { get; init; }
+        [PropertyOrder(4)]
+        public int FileId { get; init; }
     }
 }

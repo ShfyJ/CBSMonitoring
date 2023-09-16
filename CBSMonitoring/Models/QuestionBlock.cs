@@ -21,8 +21,7 @@ namespace CBSMonitoring.Models
         public int IdicatorId { get; set; }
         [ForeignKey(nameof(IdicatorId))]
         public MonitoringIndicator MonitoringIndicator { get; set; }
-        #nullable enable
-        public ICollection<FormSection>? FormSections { get; set; }
+        public ICollection<FormSection> FormSections { get; set; }
 
     }
 }

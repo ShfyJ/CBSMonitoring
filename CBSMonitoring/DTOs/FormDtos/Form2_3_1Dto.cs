@@ -1,10 +1,13 @@
-﻿namespace CBSMonitoring.DTOs.FormDtos
+﻿using CBSMonitoring.Webframework;
+
+namespace CBSMonitoring.DTOs.FormDtos
 {
     public class Form2_3_1Dto : BaseFormDto
     {
         #nullable disable
-        public bool IsListOfProtectedObjAvailable { get; set; }
-        public string FileDescription { get; set; } = "Файл";
-        public int FileId { get; set; }
+        [PropertyOrder(1)]
+        public bool IsListOfProtectedObjAvailable { get; init; }
+        [PropertyOrder(2)]
+        public int FileId { get; init; }
     }
 }

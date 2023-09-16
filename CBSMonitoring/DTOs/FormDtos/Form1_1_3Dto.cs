@@ -1,11 +1,14 @@
-﻿namespace CBSMonitoring.DTOs.FormDtos
+﻿using CBSMonitoring.Webframework;
+
+namespace CBSMonitoring.DTOs.FormDtos
 {
     public class Form1_1_3Dto : BaseFormDto
     {
         #nullable disable
-        public bool AgreedWithAuthBody { get; set; }
-        public string FileDescription { get; set; } = "Файл";
+        [PropertyOrder(1)]
+        public bool AgreedWithAuthBody { get; init; }
         #nullable enable
-        public int? FileId { get; set; }
+        [PropertyOrder(2)]
+        public int? FileId { get; init; }
     }
 }

@@ -11,7 +11,6 @@ namespace CBSMonitoring.Models
         public string Name { get; set; }
         [Required]
         public bool IsActive { get; set; }
-        #nullable enable
-        public ICollection<QuestionBlock>? QuestionBlocks { get; set; }
+        public ICollection<QuestionBlock> QuestionBlocks { get; set; }
     }
 }

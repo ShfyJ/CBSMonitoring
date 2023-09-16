@@ -12,6 +12,7 @@ using CBSMonitoring.Webframework;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Extensions;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Integrations;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IFormSectionService, FormSectionService>();
 builder.Services.AddScoped<IFileWorkRoom, FileWorkRoom>();
 builder.Services.AddScoped<IMonitoringFactory, FormReportService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+//builder.Services.AddScoped<IMonitoringIndicatorService, MonitoringIndicatorService>();
 builder.Services.AddScoped<TokenService, TokenService>();
 
 
@@ -118,6 +120,13 @@ builder.Services
         });
     });
 
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+//        .RequireAuthenticatedUser()
+//        .Build();
+//});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -128,9 +137,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("CorsPolicy");
-
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 

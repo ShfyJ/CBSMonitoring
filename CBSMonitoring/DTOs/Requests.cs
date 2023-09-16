@@ -11,12 +11,20 @@ namespace CBSMonitoring.DTOs
         {
             #nullable disable
             [Required]
-            public string SectionNumber { get; init; }
+            public string SectionNumber { get; init; } 
             public int OrganizationId { get; set; }
             public int Year { get; init; } = DateTime.Now.Year;
             public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
         }
-        public record FormItemRequest(string ItemLabel, string ItemName, bool IsMain, bool IsActive, int ItemTypeId,
+        public record ReportRequestByQb
+        {
+            [Required]
+            public int QbId { get; init; }
+            public int OrganizationId { get; set; }
+            public int Year { get; init; } = DateTime.Now.Year;
+            public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
+        }
+        public record FormItemRequest(string ItemLabel, string LabelInDisplay, string ItemName, bool IsMain, bool IsActive, int ItemTypeId,
             int FormSectionId, int Order, bool IsRequired = true, string[] SelectOptions = null, 
             bool IsListItem = false, int? ListIndex = null, string ListLabel = null);
         public record FormItemTypeRequest(string TypeName, string TypeDescription, bool IsActive);
