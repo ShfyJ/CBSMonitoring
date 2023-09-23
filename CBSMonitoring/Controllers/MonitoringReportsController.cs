@@ -30,7 +30,6 @@ namespace CBSMonitoring.Controllers
             _classType = typeof(IMonitoringFactory);
 
         }
-
         
         [HttpPost("AddReport/{sectionNumber}")]
         public async Task<IActionResult> AddReport([FromForm] MultipartFormDataWithMultipleFiles<MonitoringDto> monitoringReport, string sectionNumber)
@@ -59,6 +58,9 @@ namespace CBSMonitoring.Controllers
         {
 
             var result = await _monitoringFactory.GetQuarterReportByQb(reportRequest);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Messages);
 
             return Ok(result);
         }
@@ -108,7 +110,7 @@ namespace CBSMonitoring.Controllers
                 if (!Convert.ToBoolean(objectProperty!.GetValue(returnedObject)))
                     return BadRequest(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
 
-                return Ok(returnedObject.GetType().GetProperty("Data").GetValue(returnedObject));
+                return Ok(returnedObject);
             }
             catch (Exception ex)
             {

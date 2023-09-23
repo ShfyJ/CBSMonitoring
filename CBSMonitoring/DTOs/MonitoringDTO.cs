@@ -13,6 +13,8 @@ namespace CBSMonitoring.DTOs
         public int QuarterIndex { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
         public int Year { get; init; } = DateTime.Now.Year;
         //public string? SectionNumber { get;} = null;
+        public string? DocNumber { get; init; }
+        public DateTime? DocDate { get; init; }
 
         #region Forms
 
@@ -415,7 +417,7 @@ namespace CBSMonitoring.DTOs
 
         #endregion
     }
-
+    public record DocInfo(string? DocNumber=null, DateTime? DocDate = null);
     public class FileItem
     {
         #nullable disable

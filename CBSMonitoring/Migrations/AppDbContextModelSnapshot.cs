@@ -155,6 +155,9 @@ namespace CBSMonitoring.Migrations
                     b.Property<string>("ListLabel")
                         .HasColumnType("text");
 
+                    b.Property<string>("ListName")
+                        .HasColumnType("text");
+
                     b.Property<int>("Order")
                         .HasColumnType("integer");
 

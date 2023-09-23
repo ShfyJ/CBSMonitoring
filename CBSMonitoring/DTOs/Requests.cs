@@ -15,12 +15,20 @@ namespace CBSMonitoring.DTOs
             public int OrganizationId { get; set; }
             public int Year { get; init; } = DateTime.Now.Year;
             public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
+
+            public ReportRequest(string sectionNumber, int organizationId, int year, int quarter)
+            {
+                SectionNumber = sectionNumber;
+                OrganizationId = organizationId;
+                Year = year;
+                Quarter = quarter;
+            }
         }
         public record ReportRequestByQb
         {
             [Required]
             public int QbId { get; init; }
-            public int OrganizationId { get; set; }
+            public int OrganizationId { get; set; } = 0;
             public int Year { get; init; } = DateTime.Now.Year;
             public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
         }

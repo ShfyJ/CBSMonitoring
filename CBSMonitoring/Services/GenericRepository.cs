@@ -67,7 +67,7 @@ namespace CBSMonitoring.Services
                 query = include(query);
             }
 
-            return await query.Where(predicate).ToListAsync();
+            return await query.Where(predicate).ToArrayAsync();
         }
 
         public async Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class
