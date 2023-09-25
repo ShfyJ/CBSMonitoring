@@ -16,6 +16,10 @@ namespace CBSMonitoring.Helpers
 
         public AutoMapper()
         {
+            #region Evaluation
+            CreateMap<EvaluationRequest, Evaluation>();
+            #endregion
+
             #region Monitoring Indicator
 
             CreateMap<MonitoringIndicator, MonitoringIndicatorWithQbsResponse>()

@@ -28,5 +28,6 @@
             string Address, string PhoneNumber, string Email, string Fax, string EXat, int NumberOfEmployees);
         public record MonitoringIndicatorWithQbsResponse(int Id, string Name, bool IsActive, ICollection<QuestionBlockResponse> QuestionBlocks);
         public record MonitoringIndicatorResponse(int Id, string Name, bool IsActive, int QbCount);
+        public record ScoreResponse(double Score, DateTime EvaluatedTime);
     }
 }

@@ -22,6 +22,8 @@ namespace CBSMonitoring.Data
         public DbSet<FormItemType> FormItemTypes { get; set; }
         public DbSet<TimelyExecutionOfPlan> TimelyExecutionOfPlans { get; set; }
         public DbSet<MonitoringIndicator> MonitoringIndicators { get; set; }
+        public DbSet<Evaluation> Evaluations { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1
@@ -90,6 +92,15 @@ namespace CBSMonitoring.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Setting>()
+                .HasDiscriminator<string>("Setting")
+                .HasValue<RankingSetting>("RankingSetting");
+
+            builder.Entity<Setting>()
+                .HasIndex(nameof(Setting.Id), "Setting")
+                .IsUnique();
+
             builder.Entity<QuestionBlock>()
                 .HasIndex(m => m.BlockNumber)
                 .IsUnique();

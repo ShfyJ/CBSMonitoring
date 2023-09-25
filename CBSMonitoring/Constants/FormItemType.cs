@@ -1,6 +1,6 @@
 ﻿namespace CBSMonitoring.Constants
 {
-    public class FormItemType
+    public static class FormItemType
     {
         public const string Bool = "bool";
         public const string File = "file";

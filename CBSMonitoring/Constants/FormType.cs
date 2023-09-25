@@ -1,6 +1,6 @@
 ﻿namespace CBSMonitoring.Constants
 {
-    public class FormType
+    public static class FormType
     {
         public const string Form1_1_1 = "1.1.1";
         public const string Form1_1_2 = "1.1.2";

@@ -4,7 +4,6 @@ namespace CBSMonitoring.DTOs
 {
     public class Requests
     {
-        
         public record AuthRequest(string Email, string Password);
         public record RegistrationRequest(string Email, string UserName, string Password);
         public record ReportRequest
@@ -48,10 +47,14 @@ namespace CBSMonitoring.DTOs
             public int Year { get; init; } = DateTime.Now.Year;
             public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
         }
-
+        
         public record QuestionBlockRequest(string BlockNumber, string BlockName, bool IsActive, int Point);
         public record FormSectionRequest(string SectionName, string SectionNumber, int QuestionBlockId, bool IsActive);
         public record OrganizationRequest(string FullName, bool Status=true, string ShortName=null, string HeadFullName=null, string RegulatoryLegalAct=null,
             string Address=null, string PhoneNumber=null, string Email=null, string Fax=null, string EXat=null, int NumberOfEmployees=0);
+        
+        public record EvaluationRequest(string Indicator, double Score, int Year, int QuarterIndex, int OrganizationId);
+        public record ScoreRequest(string Indicator, int Year, int QuarterIndex, int OrganizationId);
+        public record ReEvaluationRequest(int EvaluationId, double Score);
     }
 }
