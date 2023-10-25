@@ -4,23 +4,61 @@ namespace CBSMonitoring.DTOs
 {
     public class Requests
     {
-        public record AuthRequest(string Email, string Password);
-        public record RegistrationRequest(string Email, string UserName, string Password);
+        public record LoginRequest(string UserName, string Password);
+        public class RegistrationRequest 
+        {
+            #nullable disable
+            [Required(ErrorMessage = "User Name is required")]
+            public string UserName { get; init; }
+            [Required(ErrorMessage = "Email is required")]
+            public string Email { get; init; }
+            [Required(ErrorMessage = "Full Name is required")]
+            public string FullName { get; init; }
+            [Required(ErrorMessage = "Organization is required")]
+            public int OrganizationId { get; init; }
+            [Required(ErrorMessage = "Password is required")]
+            public string Password { get; init; }
+            [Required(ErrorMessage = "Role is required")]
+            public string Role { get; init; }
+            #nullable enable
+            public string? Position { get; init; } = null;
+            public string? PhoneNumber { get; init; } = null;
+            
+        }
+
+        public class UserSelfUpdateRequest
+        {
+            #nullable disable
+            [Required(ErrorMessage = "Full name is required")]
+            public string FullName { get; init; }
+            #nullable enable
+            public string? PhoneNumber { get; init; } = null;
+            public string? Position { get; init; } = null;
+        }
+        public class UserUpdateRequest : UserSelfUpdateRequest
+        {
+            #nullable disable
+            [Required(ErrorMessage = "UserName is required")]
+            public string UserName { get; init; }
+
+            [Required(ErrorMessage = "Organization is required")]
+            public int OrganizationId { get; init; }
+        }
+
+        public record UpdatePasswordRequest(string OldPassword, string NewPassword);
         public record ReportRequest
         {
             #nullable disable
             [Required]
             public string SectionNumber { get; init; } 
             public int OrganizationId { get; set; }
-            public int Year { get; init; } = DateTime.Now.Year;
-            public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
+            public Period Period { get; init; }
 
             public ReportRequest(string sectionNumber, int organizationId, int year, int quarter)
             {
                 SectionNumber = sectionNumber;
                 OrganizationId = organizationId;
-                Year = year;
-                Quarter = quarter;
+                Period = new Period(year, quarter);
             }
         }
         public record ReportRequestByQb
@@ -28,8 +66,7 @@ namespace CBSMonitoring.DTOs
             [Required]
             public int QbId { get; init; }
             public int OrganizationId { get; set; } = 0;
-            public int Year { get; init; } = DateTime.Now.Year;
-            public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
+            public Period Period { get; init; }
         }
         public record FormItemRequest(string ItemLabel, string LabelInDisplay, string ItemName, bool IsMain, bool IsActive, int ItemTypeId,
             int FormSectionId, int Order, bool IsRequired = true, string[] SelectOptions = null, 
@@ -43,9 +80,8 @@ namespace CBSMonitoring.DTOs
         public record LevelRequest
         {
             [Required]
-            public int OrganizationId { get; init; }
-            public int Year { get; init; } = DateTime.Now.Year;
-            public int Quarter { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
+            public int OrganizationId { get; set; }
+            public Period Period { get; init; }
         }
         
         public record QuestionBlockRequest(string BlockNumber, string BlockName, bool IsActive, int Point);
@@ -53,8 +89,17 @@ namespace CBSMonitoring.DTOs
         public record OrganizationRequest(string FullName, bool Status=true, string ShortName=null, string HeadFullName=null, string RegulatoryLegalAct=null,
             string Address=null, string PhoneNumber=null, string Email=null, string Fax=null, string EXat=null, int NumberOfEmployees=0);
         
-        public record EvaluationRequest(string Indicator, double Score, int Year, int QuarterIndex, int OrganizationId);
-        public record ScoreRequest(string Indicator, int Year, int QuarterIndex, int OrganizationId);
-        public record ReEvaluationRequest(int EvaluationId, double Score);
+        public record EvaluationRequest(string BlockNumber, double Score, Period Period, int OrganizationId, string Comment = null);        
+        public class ScoreRequest
+        {
+            public Period Period { get; init; }
+            public int OrganizationId { get; set; }
+        }
+        public class ScoreRequestByIndicator : ScoreRequest
+        {
+            public string BlockNumber { get; init; }
+        }
+
+        public record ReEvaluationRequest(int EvaluationId, double Score, string Comment);
     }
 }

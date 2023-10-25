@@ -59,6 +59,13 @@ namespace CBSMonitoring.Services
            return await Result<IEnumerable<OrganizationResponse>>.SuccessAsync(_mapper.Map<IEnumerable<OrganizationResponse>>(organizations));
         }
 
+        public async Task<Result<IEnumerable<OrgShortInfoResponse>>> GetAllOrganizationsInShort()
+        {
+            var organizations = await _orgRepository.SelectAllAsync<Organization, OrgShortInfoResponse>(e => new OrgShortInfoResponse( e.OrganizationId, e.FullName ));
+            
+            return await Result<IEnumerable<OrgShortInfoResponse>>.SuccessAsync(organizations);
+        }
+
         public async Task<Result<OrganizationResponse>> GetOrganizationById(int id)
         {
             var organization = await _orgRepository.GetByIdAsync<Organization>(id);

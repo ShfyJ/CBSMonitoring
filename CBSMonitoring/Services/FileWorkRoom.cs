@@ -27,22 +27,23 @@ namespace CBSMonitoring.Models
                 return await Result<FileToStream>.FailAsync($"File entity is not found in the database");
             }
 
-            if (System.IO.File.Exists(file.FilePath))
+            if (File.Exists(file.FilePath))
             {
-                var memory = new MemoryStream();
-                var contentType = file.ContentType;
-                var extension = file.Extension;
 
-
-                using (var stream = new FileStream(file.FilePath, FileMode.Open))
+                try
                 {
-                    await stream.CopyToAsync(memory);
+                    byte[] fileBytes = await File.ReadAllBytesAsync(file.FilePath);
+                    var memory = new MemoryStream(fileBytes);
+
+                    return await Result<FileToStream>.SuccessAsync(new FileToStream(memory, file.ContentType, file.Name + file.Extension));
                 }
 
+                catch(Exception ex)
+                {
+                    return await Result<FileToStream>.FailAsync(ex.Message);
+                }
 
-                memory.Position = 0;
-
-                return await Result<FileToStream>.SuccessAsync(new FileToStream(memory, file.ContentType, file.Name + extension));
+                
             }
 
             else

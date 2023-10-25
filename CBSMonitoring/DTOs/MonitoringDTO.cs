@@ -10,8 +10,9 @@ namespace CBSMonitoring.DTOs
     public class MonitoringDto
     {
         public int OrganizationId { get; init; }
-        public int QuarterIndex { get; init; } = (DateTime.Now.Month - 1) / 3 + 1;
-        public int Year { get; init; } = DateTime.Now.Year;
+        #nullable disable
+        public Period Period { get; init; }
+        #nullable enable
         //public string? SectionNumber { get;} = null;
         public string? DocNumber { get; init; }
         public DateTime? DocDate { get; init; }

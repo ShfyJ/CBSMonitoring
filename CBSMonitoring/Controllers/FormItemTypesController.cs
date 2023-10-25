@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CBSMonitoring.Constants;
 using CBSMonitoring.Models;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,7 @@ namespace CBSMonitoring.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = UserRoles.Admin)]
     public class FormItemTypesController : ControllerBase
     {
         private readonly IGenericRepository _genericRepository;
@@ -39,7 +41,7 @@ namespace CBSMonitoring.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateFormItemType([FromForm] FormItemTypeRequest formItemTypeRequest)
         {
-            var itemType = _mapper.Map<FormItemType>(formItemTypeRequest);
+            var itemType = _mapper.Map<Models.FormItemType>(formItemTypeRequest);
             try
             {
                 await _genericRepository.AddAsync(itemType);

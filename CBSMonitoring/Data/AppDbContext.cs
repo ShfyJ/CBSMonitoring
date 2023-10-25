@@ -1,17 +1,19 @@
 ﻿using CBSMonitoring.Model;
 using CBSMonitoring.Models;
 using CBSMonitoring.Models.Forms;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CBSMonitoring.Data
 {
-    public class AppDbContext : IdentityDbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 
         }
+
         public DbSet<OrgMonitoring> OrgMonitoringReports { get; set; }
         public DbSet<QuestionBlock> QuestionBlocks { get; set; }
         public DbSet<FormSection> FormSections { get; set; }
@@ -92,6 +94,15 @@ namespace CBSMonitoring.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Rename the ASP.NET Identity tables
+            builder.Entity<ApplicationUser>().ToTable("cbs_users");
+            builder.Entity<IdentityRole>().ToTable("cbs_roles");
+            builder.Entity<IdentityUserRole<string>>().ToTable("cbs_userRoles");
+            builder.Entity<IdentityUserClaim<string>>().ToTable("cbs_userClaims");
+            builder.Entity<IdentityUserLogin<string>>().ToTable("cbs_userLogins");
+            builder.Entity<IdentityUserToken<string>>().ToTable("cbs_userTokens");
+            builder.Entity<IdentityRoleClaim<string>>().ToTable("cbs_userRoleClaims");
 
             builder.Entity<Setting>()
                 .HasDiscriminator<string>("Setting")

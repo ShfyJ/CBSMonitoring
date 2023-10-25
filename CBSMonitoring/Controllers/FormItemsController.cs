@@ -1,4 +1,5 @@
-﻿using CBSMonitoring.Services;
+﻿using CBSMonitoring.Constants;
+using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static CBSMonitoring.DTOs.Requests;
@@ -10,6 +11,7 @@ namespace CBSMonitoring.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FormItemsController : ControllerBase
     {
         private readonly IFormItemService _formItemService;
@@ -33,6 +35,7 @@ namespace CBSMonitoring.Controllers
 
         // GET api/<FormItemController>/5
         [HttpGet("GetItemById/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetItemById(int id)
         {
             var result = await _formItemService.GetFormItem(id);
@@ -47,6 +50,7 @@ namespace CBSMonitoring.Controllers
 
         // POST api/<FormItemController>
         [HttpPost("CreateFormItem")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> CreateFormItem([FromForm] FormItemRequest item)
         {
             if (!ModelState.IsValid)
@@ -65,6 +69,7 @@ namespace CBSMonitoring.Controllers
 
         // PUT api/<FormItemController>/5
         [HttpPut("UpdateFormItem/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> UpdateFormItem([FromForm] FormItemRequest item, int id)
         {
             if (!ModelState.IsValid)
@@ -78,6 +83,7 @@ namespace CBSMonitoring.Controllers
 
         // DELETE api/<FormItemController>/5
         [HttpDelete("DeleteFormItem/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> DeleteFormItem(int id)
         {
             var result = await _formItemService.DeleteFormItem(id);

@@ -10,7 +10,7 @@ namespace CBSMonitoring.Services
         Task<Result<string>> AddQuestionBlock(QuestionBlockRequest questionBlock);
         Task<Result<string>> RemoveQuestionBlock(int questionBlockId);
         Task<Result<string>> UpdateQuestionBlock(QuestionBlockRequest questionBlock, int id);
-        Task<Result<QuestionBlockResponse>> GetQuestionBlock(int questionBlockId);
+        Task<Result<RawQuestionBlockResponse>> GetQuestionBlock(int questionBlockId);
         Task<Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>> GetQuestionBlocksWithIndicators(LevelRequest request);
     }
 }

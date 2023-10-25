@@ -17,7 +17,7 @@ namespace CBSMonitoring.Models
         [Required(ErrorMessage = "IsActive is must")]
         public bool IsActive { get; set; }
         [Required(ErrorMessage = "Point is must")]
-        public int Point { get; set; } = 0;
+        public int MaxScore { get; set; } = 0;
         public int IdicatorId { get; set; }
         [ForeignKey(nameof(IdicatorId))]
         public MonitoringIndicator MonitoringIndicator { get; set; }

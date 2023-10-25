@@ -11,12 +11,14 @@ using static CBSMonitoring.DTOs.Requests;
 using CBSMonitoring.Helpers;
 using CBSMonitoring.Wrappers;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Models;
+using CBSMonitoring.Constants;
 
 namespace CBSMonitoring.Controllers
 {
     //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MonitoringReportsController : ControllerBase
     {
         private readonly FormFactory _formFactory;

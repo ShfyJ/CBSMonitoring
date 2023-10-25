@@ -1,4 +1,5 @@
-﻿using CBSMonitoring.DTOs;
+﻿using CBSMonitoring.Constants;
+using CBSMonitoring.DTOs;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +9,9 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class QuestionBlocksController : ControllerBase
     {
 
@@ -35,6 +36,7 @@ namespace CBSMonitoring.Controllers
         }
 
         [HttpPost("CreateQuestionBlock")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> CreateQuestionBlock([FromForm] QuestionBlockRequest qb)
         {
             if (!ModelState.IsValid)
@@ -64,6 +66,7 @@ namespace CBSMonitoring.Controllers
         }
 
         [HttpPut("UpdateQuestionBlock/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> UpdateQuestionBlock([FromForm] QuestionBlockRequest qb, int id)
         {
             if (!ModelState.IsValid)
@@ -81,6 +84,7 @@ namespace CBSMonitoring.Controllers
         }
 
         [HttpDelete("DeleteQuestionBlock/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> DeleteQuestionBlock(int id)
         {
             var result = await _qbService.RemoveQuestionBlock(id);

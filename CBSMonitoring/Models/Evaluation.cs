@@ -9,7 +9,7 @@ namespace CBSMonitoring.Models
         [Key] public int Id { get; set; }
         #nullable disable
         [Required]
-        public string Indicator { get; set; }  //Quesiton block number
+        public string BlockNumber { get; set; }  //Quesiton block number
         [Required]
         public double Score { get; set; }
         [Required]
@@ -20,6 +20,8 @@ namespace CBSMonitoring.Models
         [ForeignKey(nameof(OrganizationId))]
         public Organization Organization { get; set; }
         public DateTime EvaluatedTime { get; set; }
+        #nullable enable
+        public string? Comment { get; set; }
 
     }
 }

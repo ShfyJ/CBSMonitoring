@@ -19,6 +19,10 @@ using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System;
 using CBSMonitoring.DTOs.BlockDtos;
+using System.ComponentModel;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
 namespace CBSMonitoring.Services.FormReports
 {
@@ -28,14 +32,80 @@ namespace CBSMonitoring.Services.FormReports
         private readonly IGenericRepository _genericRepository;
         private readonly IFileWorkRoom _fileWorkRoom;
         private readonly IMapper _mapper;
-        private readonly FormFactory _formFactory;
+        private readonly IApplicationUserService _applicationUserService;
+        private readonly Dictionary<string, Func<ReportRequest, object?, Task<object>>> _formTypeHandlers;
         public FormReportService(IGenericRepository genericRepository,
-            IFileWorkRoom fileWorkRoom, IMapper mapper)
+            IFileWorkRoom fileWorkRoom, IMapper mapper,
+            IApplicationUserService applicationUserService)
         {
             _genericRepository = genericRepository;
             _fileWorkRoom = fileWorkRoom;
             _mapper = mapper;
-            _formFactory = new ConcreteFormFactory();
+            _applicationUserService = applicationUserService;
+            _formTypeHandlers = new Dictionary<string, Func<ReportRequest, object?, Task<object>>>
+                {
+                    { FormType.Form1_1_1, FetchAndMap < Form1_1_1, Block1_1Dto > },
+                    { FormType.Form1_1_2, FetchAndMap < Form1_1_2, Block1_1Dto > },
+                    { FormType.Form1_1_3, FetchAndMap < Form1_1_3, Block1_1Dto > },
+                    { FormType.Form1_1_4, FetchAndMap < Form1_1_4, Block1_1Dto > },
+                    { FormType.Form1_1_5, FetchAndMap < Form1_1_5, Block1_1Dto > },
+                    { FormType.Form1_1_6, FetchAndMap < Form1_1_6, Block1_1Dto > },
+                    { FormType.Form1_2_1, FetchAndMap < Form1_2_1, Block1_2Dto > },
+                    { FormType.Form1_3_1, FetchAndMap < Form1_3_1, Block1_3Dto > },
+                    { FormType.Form1_4_1, FetchAndMap < Form1_4_1, Block1_4Dto > },
+                    { FormType.Form1_4_2, FetchAndMap < Form1_4_2, Block1_4Dto > },
+                    { FormType.Form1_4_3, FetchAndMap < Form1_4_3, Block1_4Dto > },
+                    { FormType.Form1_4_4, FetchAndMap < Form1_4_4, Block1_4Dto > },
+                    { FormType.Form1_5_1, FetchAndMap < Form1_5_1, Block1_5Dto > },
+                    { FormType.Form1_5_2, FetchAndMap < Form1_5_2, Block1_5Dto > },
+                    { FormType.Form1_5_3, FetchAndMap < Form1_5_3, Block1_5Dto > },
+                    { FormType.Form2_1_1, FetchAndMap < Form2_1_1, Block2_1Dto > },
+                    { FormType.Form2_1_2, FetchAndMap < Form2_1_2, Block2_1Dto > },
+                    { FormType.Form2_2_1, FetchAndMap < Form2_2_1, Block2_2Dto > },
+                    { FormType.Form2_2_2, FetchAndMap < Form2_2_2, Block2_2Dto > },
+                    { FormType.Form2_3_1, FetchAndMap < Form2_3_1, Block2_3Dto > },
+                    { FormType.Form2_3_2, FetchAndMap < Form2_3_2, Block2_3Dto > },
+                    { FormType.Form2_3_3, FetchAndMap < Form2_3_3, Block2_3Dto > },
+                    { FormType.Form2_3_4, FetchAndMap < Form2_3_4, Block2_3Dto > },
+                    { FormType.Form2_4_1, FetchAndMap < Form2_4_1, Block2_4Dto > },
+                    { FormType.Form2_4_2, FetchAndMap < Form2_4_2, Block2_4Dto > },
+                    { FormType.Form2_4_3, FetchAndMap < Form2_4_3, Block2_4Dto > },
+                    { FormType.Form2_5_1, FetchAndMap < Form2_5_1, Block2_5Dto > },
+                    { FormType.Form2_6_1, FetchAndMap < Form2_6_1, Block2_6Dto > },
+                    { FormType.Form2_7_1, FetchAndMap < Form2_7_1, Block2_7Dto > },
+                    { FormType.Form2_8_1, FetchAndMap < Form2_8_1, Block2_8Dto > },
+                    { FormType.Form2_9_1, FetchAndMap < Form2_9_1, Block2_9Dto > },
+                    { FormType.Form2_10_1, FetchAndMap < Form2_10_1, Block2_10Dto > },
+                    { FormType.Form2_11_1, FetchAndMap < Form2_11_1, Block2_11Dto > },
+                    { FormType.Form2_11_2, FetchAndMap < Form2_11_2, Block2_11Dto > },
+                    { FormType.Form2_11_3, FetchAndMap < Form2_11_3, Block2_11Dto > },
+                    { FormType.Form2_11_4, FetchAndMap < Form2_11_4, Block2_11Dto > },
+                    { FormType.Form2_11_5, FetchAndMap < Form2_11_5, Block2_11Dto > },
+                    { FormType.Form2_11_6, FetchAndMap < Form2_11_6, Block2_11Dto > },
+                    { FormType.Form2_11_7, FetchAndMap < Form2_11_7, Block2_11Dto > },
+                    { FormType.Form2_12_1, FetchAndMap < Form2_12_1, Block2_12Dto > },
+                    { FormType.Form2_13_1, FetchAndMap < Form2_13_1, Block2_13Dto > },
+                    { FormType.Form2_14_1, FetchAndMap < Form2_14_1, Block2_14Dto > },
+                    { FormType.Form2_15_1, FetchAndMap < Form2_15_1, Block2_15Dto > },
+                    { FormType.Form2_16_1, FetchAndMap < Form2_16_1, Block2_16Dto > },
+                    { FormType.Form2_17_1, FetchAndMap < Form2_17_1, Block2_17Dto > },
+                    { FormType.Form2_18_1, FetchAndMap < Form2_18_1, Block2_18Dto > },                    
+                    { FormType.Form3_1_1, FetchAndMap < Form3_1_1, Block3_1Dto > },
+                    { FormType.Form3_1_2, FetchAndMap < Form3_1_2, Block3_1Dto > },
+                    { FormType.Form3_2_1, FetchAndMap < Form3_2_1, Block3_2Dto > },
+                    { FormType.Form3_2_2, FetchAndMap < Form3_2_2, Block3_2Dto > },
+                    { FormType.Form3_3_1, FetchAndMap < Form3_3_1, Block3_3Dto > },
+                    { FormType.Form3_4_1, FetchAndMap < Form3_4_1, Block3_4Dto > },
+                    { FormType.Form3_5_1, FetchAndMap < Form3_5_1, Block3_5Dto > },
+                    { FormType.Form3_6_1, FetchAndMap < Form3_6_1, Block3_6Dto > },
+                    { FormType.Form3_7_1, FetchAndMap < Form3_7_1, Block3_7Dto > },
+                    { FormType.Form3_8_1, FetchAndMap < Form3_8_1, Block3_8Dto > },
+                    { FormType.Form3_9_1, FetchAndMap < Form3_9_1, Block3_9Dto > },
+                    { FormType.Form3_10_1, FetchAndMap < Form3_10_1, Block3_10Dto > },
+                    { FormType.Form3_11_1, FetchAndMap < Form3_11_1, Block3_11Dto > },
+                    { FormType.Form3_12_1, FetchAndMap < Form3_12_1, Block3_12Dto > },
+                    { FormType.Form3_13_1, FetchAndMap < Form3_13_1, Block3_13Dto > },
+                };
         }
 
         public async Task<Result<string>> AddMonitoringReport<T>(MonitoringDto reportForm, string sectionNumber, IFormCollection? fileItems = null)
@@ -48,6 +118,15 @@ namespace CBSMonitoring.Services.FormReports
 
                 report.CreatedDateTime = DateTime.Now;
                 report.SectionNumber = sectionNumber;
+
+                var orgIdResult = await GetOrganizationId(report.OrganizationId);
+
+                if (!orgIdResult.Succeeded)
+                {
+                    return await Result<string>.FailAsync(orgIdResult.Messages);
+                }
+
+                report.OrganizationId = orgIdResult.Data;
 
                 var result = await GetFilledEntity(report, new DocInfo(reportForm.DocNumber,reportForm.DocDate), fileItems);
 
@@ -76,7 +155,6 @@ namespace CBSMonitoring.Services.FormReports
 
             return await Result<string>.SuccessAsync($"Success");
         }
-
         public async Task<Result<string>> DeleteMonitoringReport<T>(int id)
             where T : OrgMonitoring
         {
@@ -95,7 +173,6 @@ namespace CBSMonitoring.Services.FormReports
             return await Result<string>.SuccessAsync($"Success");
 
         }
-
         public async Task<Result<string>> EditMonitoringReport<T>(MonitoringDto reportForm, int id)
             where T : OrgMonitoring
         {
@@ -119,44 +196,56 @@ namespace CBSMonitoring.Services.FormReports
             return await Result<string>.SuccessAsync($"Success");
 
         }
-
         public async Task<Result<object>> GetQuarterReport<T, TDto>(ReportRequest reportRequest)
             where T : OrgMonitoring
             where TDto : class
         {
+            // Get current user's organization Id
+
+            var orgIdResult = await GetOrganizationId(reportRequest.OrganizationId);
+
+            if (!orgIdResult.Succeeded)
+            {
+                return await Result<object>.FailAsync(orgIdResult.Messages);
+            }
+
+            reportRequest.OrganizationId = orgIdResult.Data;
+
+            // Get the report according to given criteria
+
             OrgMonitoring? report = reportRequest.SectionNumber switch
             {
-                FormType.Form1_1_1 => await _genericRepository.GetFirstByParameterAsync<Form1_1_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form1_1_1 => await _genericRepository.GetFirstByParameterAsync<Form1_1_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form1_1_2 => await _genericRepository.GetFirstByParameterAsync<Form1_1_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form1_1_2 => await _genericRepository.GetFirstByParameterAsync<Form1_1_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form1_1_3 => await _genericRepository.GetFirstByParameterAsync<Form1_1_3>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form1_1_3 => await _genericRepository.GetFirstByParameterAsync<Form1_1_3>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_1_1 => await _genericRepository.GetFirstByParameterAsync<Form2_1_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_1_1 => await _genericRepository.GetFirstByParameterAsync<Form2_1_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_1_2 => await _genericRepository.GetFirstByParameterAsync<Form2_1_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_1_2 => await _genericRepository.GetFirstByParameterAsync<Form2_1_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_2_1 => await _genericRepository.GetFirstByParameterAsync<Form2_2_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_2_1 => await _genericRepository.GetFirstByParameterAsync<Form2_2_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_2_2 => await _genericRepository.GetFirstByParameterAsync<Form2_2_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_2_2 => await _genericRepository.GetFirstByParameterAsync<Form2_2_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.TimelyExecutionOfPlans).Include(e => e.FileModels)),
-                FormType.Form2_3_1 => await _genericRepository.GetFirstByParameterAsync<Form2_3_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_3_1 => await _genericRepository.GetFirstByParameterAsync<Form2_3_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_3_2 => await _genericRepository.GetFirstByParameterAsync<Form2_3_2>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_3_2 => await _genericRepository.GetFirstByParameterAsync<Form2_3_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.FileModel)),
-                FormType.Form2_8_1 => await _genericRepository.GetFirstByParameterAsync<Form2_8_1>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                FormType.Form2_8_1 => await _genericRepository.GetFirstByParameterAsync<Form2_8_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization).Include(e => e.QualificationImprovedEmployees)),
-                _ => await _genericRepository.GetFirstByParameterAsync<T>(e => e.Year == reportRequest.Year && e.QuarterIndex == reportRequest.Quarter
+                _ => await _genericRepository.GetFirstByParameterAsync<T>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
                                                                                             && e.OrganizationId == reportRequest.OrganizationId,
                                                                                             query => query.Include(e => e.Organization)),
             };
@@ -172,14 +261,36 @@ namespace CBSMonitoring.Services.FormReports
             if (section == null)
                 return await Result<object>.FailAsync($"Section with id={sectionNumber} not found!");
 
-            var items = await _genericRepository.GetAllByParameterAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
+            var items = await _genericRepository.GetAllAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
                                                                             query => query.Include(e => e.FormItemType));
 
             List<ReportResponse> result = GetPropertiesAndValues(monitoringDto, items.ToArray());
 
             return await Result<object>.SuccessAsync(result);
         }
+        public async Task<Result<object>> GetQuarterReportByQb(ReportRequestByQb reportRequest)
+        {
+            var sections = await GetSectionsByQbId(reportRequest.QbId);
+            if (!sections.Any())
+                return await Result<object>.FailAsync($"No sections connected to question block with id ={reportRequest.QbId} found!");
 
+            // Get current user's organization id or check if user is authorized for this organization info
+            var orgIdResult = await GetOrganizationId(reportRequest.OrganizationId);
+
+            if (!orgIdResult.Succeeded)
+            {
+                return await Result<object>.FailAsync(orgIdResult.Messages);
+            }
+
+            reportRequest.OrganizationId = orgIdResult.Data;
+
+            var organizations = await GetOrganizations(reportRequest.OrganizationId);
+
+            var finalResponses = await BuildFinalResponses(organizations, sections, reportRequest);
+
+            return await Result<object>.SuccessAsync(finalResponses);
+
+        }
         private async Task<Result<OrgMonitoring>> GetFilledEntity<T>(T report, DocInfo docInfo, IFormCollection? fileItems = null)
         where T : OrgMonitoring
         {
@@ -190,118 +301,41 @@ namespace CBSMonitoring.Services.FormReports
 
             var fileModels = await ProcessMultipleFiles(fileItems, Dto, docInfo);
 
-            PropertyInfo fileModelProperty;
+            // Assign values to navigation properties of the forms 
+            // For the navigation propertyless forms, just return report itself
+            // Check filmodels emptiness for only the forms requiring file upload
 
             switch (report)
-            {
+                {
+                    case Form1_1_1:
+                    case Form1_1_2:
+                    case Form1_1_3:
+                    case Form2_1_1:
+                    case Form2_1_2:
+                    case Form2_2_1:
+                    case Form2_3_1:
+                    case Form2_3_2:
+                        if (fileModels.Count == 0)
+                            throw new NotSupportedException($"No files received!");
+                        SetFileModelProperty(report, fileModels.First());
+                        break;
 
-                case Form1_1_1:
+                    case Form2_2_2:
+                        if (fileModels.Count == 0)
+                            throw new NotSupportedException($"No files received!");
+                    PropertyInfo relatedFiles = report.GetType().GetProperty(nameof(Form2_2_2.FileModels))!;
+                        relatedFiles.SetValue(report, fileModels);
+                        break;
 
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_1.FileModel))!;
-                    
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form1_1_2:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_2.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form1_1_3:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form1_1_3.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_1_1:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form2_1_1.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_1_2:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form2_1_2.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_2_1:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form2_2_1.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_2_2:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    PropertyInfo relatedFiles =
-                    report.GetType().GetProperty(nameof(Form2_2_2.FileModels))!;
-                    
-                    relatedFiles.SetValue(report, fileModels);
-                    break;
-
-                case Form2_3_1:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form2_3_1.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_3_2:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    fileModelProperty = report.GetType().GetProperty(nameof(Form2_3_2.FileModel))!;
-                    fileModelProperty.SetValue(report, fileModels.First());
-                    break;
-
-                case Form2_8_1:
-
-                    if (fileModels.Count == 0)
-                        throw new NotSupportedException($"No files received!");
-
-                    PropertyInfo qualificationImprovedEmployeeListProperty =
-                    report.GetType().GetProperty(nameof(Form2_8_1.QualificationImprovedEmployees))!;
-                    List<QualificationImprovedEmployee> qualificationImprovedEmployees = (List<QualificationImprovedEmployee>)
-                        qualificationImprovedEmployeeListProperty.GetValue(report)!;
-
-                    for (int i = 0; i < Math.Min(qualificationImprovedEmployees.Count, fileModels.Count); i++)
-                    {
-                        qualificationImprovedEmployees[i].Certificate = fileModels[i];
-                    }
-
-                    qualificationImprovedEmployeeListProperty.SetValue(report, qualificationImprovedEmployees);
-                    break;
-
-            }
+                    case Form2_8_1:
+                        if (fileModels.Count == 0)
+                            throw new NotSupportedException($"No files received!");
+                    SetPropertyForForm2_8_1(report, fileModels);
+                        break;
+                }
 
             return await Result<OrgMonitoring>.SuccessAsync(report);
         }
-
         private async Task<List<FileModel>> ProcessMultipleFiles(IFormCollection? fileItems, OrgMonitoringDto dto, DocInfo docInfo)
         {
             if (fileItems is null)
@@ -321,7 +355,6 @@ namespace CBSMonitoring.Services.FormReports
 
             return fileModels;
         }
-
         private async Task ReplaceExistingEntityWithNewOne<T>(OrgMonitoring newEntity, T entity)
             where T : OrgMonitoring
         {
@@ -363,420 +396,103 @@ namespace CBSMonitoring.Services.FormReports
 
             await _genericRepository.UpdateAsync(oldEntity);
         }
-
-        private static List<ReportResponse> GetPropertiesAndValues(object obj, FormItem[] items, int order = 1)
+        private List<ReportResponse> GetPropertiesAndValues(object obj, FormItem[] formItems, int order = 1)
         {
-            List<ReportResponse> list = new ();
-
-            bool ToBeDisplayed;
-            string PropertyLabel;
-            string ItemType;
-            int Order = order;
-            string PropertyName;
-
-            var Properties = obj.GetType().GetProperties();
-
-            if(obj is Form2_8_1Dto)
-            {
-                Properties = obj.GetType().GetProperty(nameof(Form2_8_1Dto.QualificationImprovedEmployees))!.GetType().GetGenericArguments()[0].GetProperties();
-            }
-
-            FormItem[] SelectedItems = new FormItem[Properties.Length];
+            var response = new List<ReportResponse>();
             
-            for(int j=0; j<Properties.Length; j++)
-            {  
-                PropertyName = Properties[j].Name.Equals("FileId") ? "FileItem" : Properties[j].Name;
-                
-                for (int i = 0; i< items.Length; i++)
-                {
-                    if (PropertyName.Equals(items[i].ItemName))
-                    {
-                        SelectedItems[j] = items[i];
-                        break;
-                    }
-                }
-            }
+            int Order = order;
 
-            ///</> item.Count() is considered less than or equal to Properties.Count() </>
+            var properties = obj.GetType().GetProperties()
+                                    .Where(p => p.GetCustomAttribute<PropertyOrderAttribute>() != null)
+                                    .OrderBy(p => p.GetCustomAttribute<PropertyOrderAttribute>()!.Order).ToArray();
 
-            for (int i = 0; i < Properties.Length; i++)
+            var selectedItems = GenerateSelectedItems(properties, formItems);
+
+            for (int i=0; i<properties.Length; i++)
             {
-                var orderAttr = Properties[i].GetCustomAttribute<PropertyOrderAttribute>();
+                var orderAttr = properties[i].GetCustomAttribute<PropertyOrderAttribute>();
 
-                if (Properties[i].DeclaringType != typeof(BaseFormDto))
+                bool toBeDisplayed = properties[i].GetCustomAttribute<PropertyDisplayAttribute>() != null 
+                                        && properties[i].GetCustomAttribute<PropertyDisplayAttribute>()!.Display
+                                        || properties[i].GetCustomAttribute<PropertyDisplayAttribute>() == null;
+
+                string propertyLabel = !toBeDisplayed ? properties[i].Name : (selectedItems[i] != null ? selectedItems[i].ItemLabel : string.Empty);
+
+                string itemType = !toBeDisplayed ? string.Empty : (selectedItems[i] != null ? selectedItems[i].FormItemType.TypeName : string.Empty);
+
+                int currentOrder = (order == 1 && orderAttr != null) ? orderAttr.Order : (order != 1 ? Order : int.MaxValue);
+
+                var value = properties[i].GetValue(obj);
+
+                bool isFileWithInfo = itemType.Equals("fileWithInfo");
+
+                var fileInfo = isFileWithInfo ? GetFileInfo(value == null ? 0 : (int)value).Result : null;
+
+                if (value is IEnumerable<object> collection && value is not string) // Ensure strings aren't treated as collections
                 {
-                    ToBeDisplayed = true;
-                    PropertyLabel = SelectedItems[i].ItemLabel;
-                    ItemType = SelectedItems[i].FormItemType.TypeName;
-                }
+                    var collectionResponses = new List<List<ReportResponse>>();
+                    foreach (var item in collection)
+                    {
+                        collectionResponses.Add(GetPropertiesAndValues(item, formItems, Order)); // Recursive call for collection items
+                    }
 
+                    response.Add(new ReportResponse
+                    {
+                        PropertyLabel = GetTheLabelOfList(formItems),
+                        Value = null, // You can decide if you want to include the raw collection here
+                        Order = currentOrder,
+                        Type = itemType,
+                        IsCollection = true,
+                        CollectionItems = collectionResponses,
+                        ToBeDisplayed = toBeDisplayed
+                    });
+                }
                 else
                 {
-                    PropertyLabel = Properties[i].Name;
-                    ToBeDisplayed = false;
-                    ItemType = string.Empty;
+                    response.Add(new ReportResponse
+                    {
+                        PropertyLabel = propertyLabel,
+                        Value = value,
+                        Order = currentOrder,
+                        Type = itemType,
+                        IsCollection = false,
+                        IsFileWithInfo = isFileWithInfo,
+                        FileInformation = fileInfo,
+                        ToBeDisplayed = toBeDisplayed
+                    });
                 }
 
-                if (orderAttr != null)
-                {
-                    if (order == 1)
-                        Order = orderAttr.Order;
-
-                    list.Add(new ReportResponse(PropertyLabel, Properties[i].GetValue(obj, null)!, Order, ItemType, ToBeDisplayed));
-                }
-
-                else
-                {
-                    list.Add(new ReportResponse(PropertyLabel, Properties[i].GetValue(obj, null)!, int.MaxValue, ItemType, ToBeDisplayed));
-                }
-
-                if(order != 1)
+                if (order != 1)
                     Order++;
             }
 
-            return list;
+            return response;
+
+            
         }
-
-        public async Task<Result<object>> GetQuarterReportByQb(ReportRequestByQb reportRequest)
-        {
-            var sections = await _genericRepository.GetAllByParameterAsync<FormSection>(e => e.QuestionBlockId == reportRequest.QbId);
-            if (!sections.Any())
-                return await Result<object>.FailAsync($"No sections connected to question block with id ={reportRequest.QbId} found!");
-
-            IEnumerable<Organization> organizations = new List<Organization>();
-
-            if(reportRequest.OrganizationId == 0)
-            {
-                organizations = await _genericRepository.GetAllAsync<Organization>();
-            }
-
-            else
-            {
-                var organization = await _genericRepository.GetByIdAsync<Organization>(reportRequest.OrganizationId);
-                if(organization != null)
-                {
-                    List<Organization> temp = new()
-                    {
-                        organization
-                    };
-
-                    organizations = temp;
-                }
-
-            }
-
-            Dictionary<string, FormItem[]> dictOfItemArrays = new();
-
-            List<List<ReportResponse>> finalResponseList = new();
-
-            foreach(var org in organizations)
-            {
-                List<ReportResponse> responseList = new()
-                {
-                    new ReportResponse("Наименование структурных подразделений", org.FullName, 0, string.Empty, true)
-                };
-
-                object? blockDto = null;
-                
-                List<FormItem> formItems = new();
-
-                foreach (var section in sections)
-                {
-
-                    var report = await GetReportDto(new ReportRequest(section.SectionNumber, org.OrganizationId, reportRequest.Year, reportRequest.Quarter), blockDto);
-
-                    blockDto = report;
-                    
-                    var items = await _genericRepository.GetAllByParameterAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
-                                                                                                query => query.Include(e => e.FormItemType));
-
-                    formItems.AddRange(items);
-                }
-
-                var responseObjList = GetPropertiesAndValues(blockDto!, formItems.ToArray());
-
-                responseList.AddRange(responseObjList); 
-
-                finalResponseList.Add(responseList);
-            }
-
-            return await Result<object>.SuccessAsync(finalResponseList);
-
-        }
-
         private async Task<object> GetReportDto(ReportRequest reportRequest, object? blockDto)
         {
-
-            object report;
-
-            switch (reportRequest.SectionNumber)
+           
+            if(!_formTypeHandlers.ContainsKey(reportRequest.SectionNumber))
             {
-                case FormType.Form1_1_1:
-                    Expression<Func<Form1_1_1, bool>> predicate1_1_1 = BuildPredicate<Form1_1_1>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_1, Block1_1Dto>(predicate1_1_1, blockDto);
-                    break;
-
-                case FormType.Form1_1_2:
-                    Expression<Func<Form1_1_2, bool>> predicate1_1_2 = BuildPredicate<Form1_1_2>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_2, Block1_1Dto>(predicate1_1_2, blockDto);
-
-                    break;
-
-                case FormType.Form1_1_3:
-                    Expression<Func<Form1_1_3, bool>> predicate1_1_3 = BuildPredicate<Form1_1_3>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_3, Block1_1Dto>(predicate1_1_3, blockDto);
-
-                    break;
-
-                case FormType.Form1_1_4:
-                    Expression<Func<Form1_1_4, bool>> predicate1_1_4 = BuildPredicate<Form1_1_4>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_4, Block1_1Dto>(predicate1_1_4, blockDto);
-                    break;
-
-                case FormType.Form1_1_5:
-                    Expression<Func<Form1_1_5, bool>> predicate1_1_5 = BuildPredicate<Form1_1_5>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_5, Block1_1Dto>(predicate1_1_5, blockDto);
-                    break;
-
-                case FormType.Form1_1_6:
-                    Expression<Func<Form1_1_6, bool>> predicate1_1_6 = BuildPredicate<Form1_1_6>(reportRequest);
-                    report = await FetchAndMapData<Form1_1_6, Block1_1Dto>(predicate1_1_6, blockDto);
-                    break;
-                case FormType.Form1_2_1:
-                    Expression<Func<Form1_2_1, bool>> predicate1_2_1 = BuildPredicate<Form1_2_1>(reportRequest);
-                    report = await FetchAndMapData<Form1_2_1, Block1_2Dto>(predicate1_2_1, blockDto);
-                    break;
-                case FormType.Form1_3_1:
-                    Expression<Func<Form1_3_1, bool>> predicate1_3_1 = BuildPredicate<Form1_3_1>(reportRequest);
-                    report = await FetchAndMapData<Form1_3_1, Block1_3Dto>(predicate1_3_1, blockDto);
-                    break;
-                case FormType.Form1_4_1:
-                    Expression<Func<Form1_4_1, bool>> predicate1_4_1 = BuildPredicate<Form1_4_1>(reportRequest);
-                    report = await FetchAndMapData<Form1_4_1, Block1_4Dto>(predicate1_4_1, blockDto);
-                    break;
-                case FormType.Form1_4_2:
-                    Expression<Func<Form1_4_2, bool>> predicate1_4_2 = BuildPredicate<Form1_4_2>(reportRequest);
-                    report = await FetchAndMapData<Form1_4_2, Block1_4Dto>(predicate1_4_2, blockDto);
-                    break;
-                case FormType.Form1_4_3:
-                    Expression<Func<Form1_4_3, bool>> predicate1_4_3 = BuildPredicate<Form1_4_3>(reportRequest);
-                    report = await FetchAndMapData<Form1_4_3, Block1_4Dto>(predicate1_4_3, blockDto);
-                    break;
-                case FormType.Form1_4_4:
-                    Expression<Func<Form1_4_4, bool>> predicate1_4_4 = BuildPredicate<Form1_4_4>(reportRequest);
-                    report = await FetchAndMapData<Form1_4_4, Block1_4Dto>(predicate1_4_4, blockDto);
-                    break;
-                case FormType.Form1_5_1:
-                    Expression<Func<Form1_5_1, bool>> predicate1_5_1 = BuildPredicate<Form1_5_1>(reportRequest);
-                    report = await FetchAndMapData<Form1_5_1, Block1_5Dto>(predicate1_5_1, blockDto);
-                    break;
-                case FormType.Form1_5_2:
-                    Expression<Func<Form1_5_2, bool>> predicate1_5_2 = BuildPredicate<Form1_5_2>(reportRequest);
-                    report = await FetchAndMapData<Form1_5_2, Block1_5Dto>(predicate1_5_2, blockDto);
-                    break;
-                case FormType.Form1_5_3:
-                    Expression<Func<Form1_5_3, bool>> predicate1_5_3 = BuildPredicate<Form1_5_3>(reportRequest);
-                    report = await FetchAndMapData<Form1_5_3, Block1_5Dto>(predicate1_5_3, blockDto);
-                    break;
-                case FormType.Form2_1_1:
-                    Expression<Func<Form2_1_1, bool>> predicate2_1_1 = BuildPredicate<Form2_1_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_1_1, Block2_1Dto>(predicate2_1_1, blockDto);
-                    break;
-                case FormType.Form2_1_2:
-                    Expression<Func<Form2_1_2, bool>> predicate2_1_2 = BuildPredicate<Form2_1_2>(reportRequest);
-                    report = await FetchAndMapData<Form2_1_2, Block2_1Dto>(predicate2_1_2, blockDto);
-                    break;
-                case FormType.Form2_2_1:
-                    Expression<Func<Form2_2_1, bool>> predicate2_2_1 = BuildPredicate<Form2_2_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_2_1, Block2_2Dto>(predicate2_2_1, blockDto);
-                    break;
-                case FormType.Form2_2_2:
-                    Expression<Func<Form2_2_2, bool>> predicate2_2_2 = BuildPredicate<Form2_2_2>(reportRequest);
-                    report = await FetchAndMapData<Form2_2_2, Block2_2Dto>(predicate2_2_2, blockDto);
-                    break;
-                case FormType.Form2_3_1:
-                    Expression<Func<Form2_3_1, bool>> predicate2_3_1 = BuildPredicate<Form2_3_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_3_1, Block2_3Dto>(predicate2_3_1, blockDto);
-                    break;
-                case FormType.Form2_3_2:
-                    Expression<Func<Form2_3_2, bool>> predicate2_3_2 = BuildPredicate<Form2_3_2>(reportRequest);
-                    report = await FetchAndMapData<Form2_3_2, Block2_3Dto>(predicate2_3_2, blockDto);
-                    break;
-                case FormType.Form2_3_3:
-                    Expression<Func<Form2_3_3, bool>> predicate2_3_3 = BuildPredicate<Form2_3_3>(reportRequest);
-                    report = await FetchAndMapData<Form2_3_3, Block2_3Dto>(predicate2_3_3, blockDto);
-                    break;
-                case FormType.Form2_3_4:
-                    Expression<Func<Form2_3_4, bool>> predicate2_3_4 = BuildPredicate<Form2_3_4>(reportRequest);
-                    report = await FetchAndMapData<Form2_3_4, Block2_3Dto>(predicate2_3_4, blockDto);
-                    break;
-                case FormType.Form2_4_1:
-                    Expression<Func<Form2_4_1, bool>> predicate2_4_1 = BuildPredicate<Form2_4_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_4_1, Block2_4Dto>(predicate2_4_1, blockDto);
-                    break;
-                case FormType.Form2_4_2:
-                    Expression<Func<Form2_4_2, bool>> predicate2_4_2 = BuildPredicate<Form2_4_2>(reportRequest);
-                    report = await FetchAndMapData<Form2_4_2, Block2_4Dto>(predicate2_4_2, blockDto);
-                    break;
-                case FormType.Form2_4_3:
-                    Expression<Func<Form2_4_3, bool>> predicate2_4_3 = BuildPredicate<Form2_4_3>(reportRequest);
-                    report = await FetchAndMapData<Form2_4_3, Block2_4Dto>(predicate2_4_3, blockDto);
-                    break;
-                case FormType.Form2_5_1:
-                    Expression<Func<Form2_5_1, bool>> predicate2_5_1 = BuildPredicate<Form2_5_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_5_1, Block2_5Dto>(predicate2_5_1, blockDto);
-                    break;
-                case FormType.Form2_6_1:
-                    Expression<Func<Form2_6_1, bool>> predicate2_6_1 = BuildPredicate<Form2_6_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_6_1, Block2_6Dto>(predicate2_6_1, blockDto);
-                    break;
-                case FormType.Form2_7_1:
-                    Expression<Func<Form2_7_1, bool>> predicate2_7_1 = BuildPredicate<Form2_7_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_7_1, Block2_7Dto>(predicate2_7_1, blockDto);
-                    break;
-                case FormType.Form2_8_1:
-                    Expression<Func<Form2_8_1, bool>> predicate2_8_1 = BuildPredicate<Form2_8_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_8_1, Block2_8Dto>(predicate2_8_1, blockDto);
-                    break;
-                case FormType.Form2_9_1:
-                    Expression<Func<Form2_9_1, bool>> predicate2_9_1 = BuildPredicate<Form2_9_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_9_1, Block2_9Dto>(predicate2_9_1, blockDto);
-                    break;
-                case FormType.Form2_10_1:
-                    Expression<Func<Form2_10_1, bool>> predicate2_10_1 = BuildPredicate<Form2_10_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_10_1, Block2_10Dto>(predicate2_10_1, blockDto);
-                    break;
-                case FormType.Form2_11_1:
-                    Expression<Func<Form2_11_1, bool>> predicate2_11_1 = BuildPredicate<Form2_11_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_1, Block2_11Dto>(predicate2_11_1, blockDto);
-                    break;
-                case FormType.Form2_11_2:
-                    Expression<Func<Form2_11_2, bool>> predicate2_11_2 = BuildPredicate<Form2_11_2>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_2, Block2_11Dto>(predicate2_11_2, blockDto);
-                    break;
-                case FormType.Form2_11_3:
-                    Expression<Func<Form2_11_3, bool>> predicate2_11_3 = BuildPredicate<Form2_11_3>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_3, Block2_11Dto>(predicate2_11_3, blockDto);
-                    break;
-                case FormType.Form2_11_4:
-                    Expression<Func<Form2_11_4, bool>> predicate2_11_4 = BuildPredicate<Form2_11_4>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_4, Block2_11Dto>(predicate2_11_4, blockDto);
-                    break;
-                case FormType.Form2_11_5:
-                    Expression<Func<Form2_11_5, bool>> predicate2_11_5 = BuildPredicate<Form2_11_5>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_5, Block2_11Dto>(predicate2_11_5, blockDto);
-                    break;
-                case FormType.Form2_11_6:
-                    Expression<Func<Form2_11_6, bool>> predicate2_11_6 = BuildPredicate<Form2_11_6>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_6, Block2_11Dto>(predicate2_11_6, blockDto);
-                    break;
-                case FormType.Form2_11_7:
-                    Expression<Func<Form2_11_7, bool>> predicate2_11_7 = BuildPredicate<Form2_11_7>(reportRequest);
-                    report = await FetchAndMapData<Form2_11_7, Block2_11Dto>(predicate2_11_7, blockDto);
-                    break;
-                case FormType.Form2_12_1:
-                    Expression<Func<Form2_12_1, bool>> predicate2_12_1 = BuildPredicate<Form2_12_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_12_1, Block2_12Dto>(predicate2_12_1, blockDto);
-                    break;
-                case FormType.Form2_13_1:
-                    Expression<Func<Form2_13_1, bool>> predicate2_13_1 = BuildPredicate<Form2_13_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_13_1, Block2_13Dto>(predicate2_13_1, blockDto);
-                    break;
-                case FormType.Form2_14_1:
-                    Expression<Func<Form2_14_1, bool>> predicate2_14_1 = BuildPredicate<Form2_14_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_14_1, Block2_14Dto>(predicate2_14_1, blockDto);
-                    break;
-                case FormType.Form2_15_1:
-                    Expression<Func<Form2_15_1, bool>> predicate2_15_1 = BuildPredicate<Form2_15_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_15_1, Block2_15Dto>(predicate2_15_1, blockDto);
-                    break;
-                case FormType.Form2_16_1:
-                    Expression<Func<Form2_16_1, bool>> predicate2_16_1 = BuildPredicate<Form2_16_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_16_1, Block2_16Dto>(predicate2_16_1, blockDto);
-                    break;
-                case FormType.Form2_17_1:
-                    Expression<Func<Form2_17_1, bool>> predicate2_17_1 = BuildPredicate<Form2_17_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_17_1, Block2_17Dto>(predicate2_17_1, blockDto);
-                    break;
-                case FormType.Form2_18_1:
-                    Expression<Func<Form2_18_1, bool>> predicate2_18_1 = BuildPredicate<Form2_18_1>(reportRequest);
-                    report = await FetchAndMapData<Form2_18_1, Block2_18Dto>(predicate2_18_1, blockDto);
-                    break;
-                case FormType.Form3_1_1:
-                    Expression<Func<Form3_1_1, bool>> predicate3_1_1 = BuildPredicate<Form3_1_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_1_1, Block3_1Dto>(predicate3_1_1, blockDto);
-                    break;
-                case FormType.Form3_1_2:
-                    Expression<Func<Form3_1_2, bool>> predicate3_1_2 = BuildPredicate<Form3_1_2>(reportRequest);
-                    report = await FetchAndMapData<Form3_1_2, Block3_1Dto>(predicate3_1_2, blockDto);
-                    break;
-                case FormType.Form3_2_1:
-                    Expression<Func<Form3_2_1, bool>> predicate3_2_1 = BuildPredicate<Form3_2_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_2_1, Block3_2Dto>(predicate3_2_1, blockDto);
-                    break;
-                case FormType.Form3_2_2:
-                    Expression<Func<Form3_2_2, bool>> predicate3_2_2 = BuildPredicate<Form3_2_2>(reportRequest);
-                    report = await FetchAndMapData<Form3_2_2, Block3_2Dto>(predicate3_2_2, blockDto);
-                    break;
-                case FormType.Form3_3_1:
-                    Expression<Func<Form3_3_1, bool>> predicate3_3_1 = BuildPredicate<Form3_3_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_3_1, Block3_3Dto>(predicate3_3_1, blockDto);
-                    break;
-                case FormType.Form3_4_1:
-                    Expression<Func<Form3_4_1, bool>> predicate3_4_1 = BuildPredicate<Form3_4_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_4_1, Block3_4Dto>(predicate3_4_1, blockDto);
-                    break;
-                case FormType.Form3_5_1:
-                    Expression<Func<Form3_5_1, bool>> predicate3_5_1 = BuildPredicate<Form3_5_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_5_1, Block3_5Dto>(predicate3_5_1, blockDto);
-                    break;
-                case FormType.Form3_6_1:
-                    Expression<Func<Form3_6_1, bool>> predicate3_6_1 = BuildPredicate<Form3_6_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_6_1, Block3_6Dto>(predicate3_6_1, blockDto);
-                    break;
-                case FormType.Form3_7_1:
-                    Expression<Func<Form3_7_1, bool>> predicate3_7_1 = BuildPredicate<Form3_7_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_7_1, Block3_7Dto>(predicate3_7_1, blockDto);
-                    break;
-                case FormType.Form3_8_1:
-                    Expression<Func<Form3_8_1, bool>> predicate3_8_1 = BuildPredicate<Form3_8_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_8_1, Block3_8Dto>(predicate3_8_1, blockDto);
-                    break;
-                case FormType.Form3_9_1:
-                    Expression<Func<Form3_9_1, bool>> predicate3_9_1 = BuildPredicate<Form3_9_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_9_1, Block3_9Dto>(predicate3_9_1, blockDto);
-                    break;
-                case FormType.Form3_10_1:
-                    Expression<Func<Form3_10_1, bool>> predicate3_10_1 = BuildPredicate<Form3_10_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_10_1, Block3_10Dto>(predicate3_10_1, blockDto);
-                    break;
-                case FormType.Form3_11_1:
-                    Expression<Func<Form3_11_1, bool>> predicate3_11_1 = BuildPredicate<Form3_11_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_11_1, Block3_11Dto>(predicate3_11_1, blockDto);
-                    break;
-                case FormType.Form3_12_1:
-                    Expression<Func<Form3_12_1, bool>> predicate3_12_1 = BuildPredicate<Form3_12_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_12_1, Block3_12Dto>(predicate3_12_1, blockDto);
-                    break;
-                case FormType.Form3_13_1:
-                    Expression<Func<Form3_13_1, bool>> predicate3_13_1 = BuildPredicate<Form3_13_1>(reportRequest);
-                    report = await FetchAndMapData<Form3_13_1, Block3_13Dto>(predicate3_13_1, blockDto);
-                    break;
-                default:
-                    throw new NotSupportedException($"Section number with <{reportRequest.SectionNumber}> not found!");
+                throw new NotSupportedException($"Section number with <{reportRequest.SectionNumber}> not found!");
             }
 
-            return report;
-
+            return await _formTypeHandlers[reportRequest.SectionNumber](reportRequest, blockDto);
         }
-
         private static Expression<Func<T, bool>> BuildPredicate<T>(ReportRequest reportRequest) where T : OrgMonitoring
         {
-            return entity => entity.Year == reportRequest.Year &&
-                             entity.QuarterIndex == reportRequest.Quarter &&
+            return entity => entity.Year == reportRequest.Period.Year &&
+                             entity.QuarterIndex == reportRequest.Period.Quarter &&
                              entity.OrganizationId == reportRequest.OrganizationId;
         }
-
+        private async Task<object> FetchAndMap<TEntity, TDto>(ReportRequest reportRequest, object? blockDto)
+            where TEntity : OrgMonitoring, new()
+            where TDto : class, new()
+        {
+            var predicate = BuildPredicate<TEntity>(reportRequest);
+            return await FetchAndMapData<TEntity, TDto>(predicate, blockDto);
+        }
         private async Task<TDto> FetchAndMapData<TEntity, TDto>(Expression<Func<TEntity, bool>> predicate, object? blockDto)
 
             where TEntity : OrgMonitoring, new()
@@ -788,6 +504,136 @@ namespace CBSMonitoring.Services.FormReports
                 return entity == null ? new TDto() : _mapper.Map<TDto>(entity);
             else
                 return (TDto)(entity == null ? blockDto : _mapper.Map(entity, blockDto));
+        }
+        private async Task<IEnumerable<FormSection>> GetSectionsByQbId(int qbId)
+        {
+            return await _genericRepository.GetAllAsync<FormSection>(e => e.QuestionBlockId == qbId);
+        }
+        private async Task<IEnumerable<Organization>> GetOrganizations(int organizationId)
+        {
+            if (organizationId == 0)
+                return await _genericRepository.GetAllAsync<Organization>();
+
+            var organization = await _genericRepository.GetByIdAsync<Organization>(organizationId);
+            return organization != null ? new List<Organization> { organization } : Enumerable.Empty<Organization>();
+        }
+        private async Task<List<List<ReportResponse>>> BuildFinalResponses(IEnumerable<Organization> organizations, IEnumerable<FormSection> sections, ReportRequestByQb reportRequest)
+        {
+            List<List<ReportResponse>> finalResponseList = new();
+
+            foreach (var org in organizations)
+            {
+                List<ReportResponse> responseList = new()
+                    {
+                        new ReportResponse("Наименование структурных подразделений", org.FullName, true)
+                    };
+
+                object? blockDto = null;
+                List<FormItem> formItems = new();
+
+                foreach (var section in sections)
+                {
+                    var report = await GetReportDto(new ReportRequest(section.SectionNumber, org.OrganizationId, reportRequest.Period.Year, reportRequest.Period.Quarter), blockDto);
+                    blockDto = report;
+
+                    var items = await _genericRepository.GetAllAsync<FormItem>(
+                                    e => e.FormSectionId == section.SectionId && e.ItemName != "FileItem",
+                                    query => query.Include(e => e.FormItemType));
+
+                    formItems.AddRange(items);
+                }
+
+                var responseObjList = GetPropertiesAndValues(blockDto!, formItems.ToArray());
+                responseList.AddRange(responseObjList);
+
+                finalResponseList.Add(responseList);
+            }
+
+            return finalResponseList;
+        }
+        private static void SetFileModelProperty(object targetReport, object value)
+        {
+            //string propertyName = $"{targetReport.GetType().Name}.FileModel";
+            PropertyInfo fileModelProperty = targetReport.GetType().GetProperty("FileModel")!;
+            fileModelProperty.SetValue(targetReport, value);
+        }
+        private static void SetPropertyForForm2_8_1(object targetReport, List<FileModel> fileModelsList)
+        {
+            PropertyInfo qualificationImprovedEmployeeListProperty = targetReport.GetType().GetProperty(nameof(Form2_8_1.QualificationImprovedEmployees))!;
+            List<QualificationImprovedEmployee> qualificationImprovedEmployees = (List<QualificationImprovedEmployee>)
+                qualificationImprovedEmployeeListProperty.GetValue(targetReport)!;
+
+            for (int i = 0; i < Math.Min(qualificationImprovedEmployees.Count, fileModelsList.Count); i++)
+            {
+                qualificationImprovedEmployees[i].Certificate = fileModelsList[i];
+            }
+
+            qualificationImprovedEmployeeListProperty.SetValue(targetReport, qualificationImprovedEmployees);
+        }
+        private static FormItem[] GenerateSelectedItems(PropertyInfo[] properties, FormItem[] formItems)
+        {
+            FormItem[] SelectedItems = new FormItem[properties.Length];
+
+            // Convert items to a dictionary for faster lookup
+            var itemsDict = formItems.ToDictionary(item => item.ItemName, item => item);
+
+            // Go through Properties and look for property name match in items dictionary and update SelectedItems with them
+            foreach (var property in properties.Select((prop, idx) => new { prop, idx }))
+            {
+                var propertyName = property.prop.Name.Equals("FileId") ? "FileItem" : property.prop.Name;
+
+                if (itemsDict.TryGetValue(propertyName, out var foundItem))
+                {
+                    SelectedItems[property.idx] = foundItem;
+                }
+            }
+
+            return SelectedItems;
+            
+        }
+        // Assuming that there can be only one list items in the array
+        private static string? GetTheLabelOfList(FormItem[] items)
+        {
+            foreach(var item in items)
+            {
+                if (item.IsListItem)
+                {
+                    return item.ListLabel;
+                }
+            }
+
+            return string.Empty;
+        }    
+        private async Task<ReportResponse.FileInfo> GetFileInfo(int id)
+        {
+            var fileModel = await _genericRepository.GetByIdAsync<FileModel>(id);
+
+            return fileModel == null ? new ReportResponse.FileInfo("", new DateTime())
+                                        : new ReportResponse.FileInfo(fileModel.DocNumber, fileModel.DocDate);
+        }
+        private async Task<Result<int>> GetOrganizationId(int organizationId)
+        {
+            if(organizationId != 0 && organizationId > 0)
+            {
+                var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
+
+                if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
+                    return await Result<int>.FailAsync($"{isUserAuthorizedResult.Messages}");
+
+                return await Result<int>.SuccessAsync(organizationId);
+            }
+            var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
+
+            if (!claimResult.Succeeded)
+            {
+                return await Result<int>.FailAsync(claimResult.Messages);
+            }
+
+            organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
+            if (organizationId == 0)
+                return await Result<int>.FailAsync($"Wrong Organizaiton Id : {claimResult.Data}");
+
+            return await Result<int>.SuccessAsync(organizationId);
         }
     }
 }

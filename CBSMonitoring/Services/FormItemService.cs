@@ -93,7 +93,7 @@ namespace CBSMonitoring.Services
         public async Task<Result<IEnumerable<FormItemResponse>>> GetFormItemsByFormSectionId(int formSectionId)
         {
 
-            var items = await _genericRepository.GetAllAsync<FormItem>(query => query.Include(e => e.FormItemType));
+            var items = await _genericRepository.GetAllAsync<FormItem>(null,query => query.Include(e => e.FormItemType));
             items = items.Where(i => i.FormSectionId == formSectionId);
 
             List<FormItemResponse> result = new();

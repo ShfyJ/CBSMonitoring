@@ -1,4 +1,5 @@
-﻿using CBSMonitoring.DTOs;
+﻿using CBSMonitoring.Constants;
+using CBSMonitoring.DTOs;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace CBSMonitoring.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FormSectionsController : ControllerBase
     {
         private readonly IFormSectionService _fsService;
@@ -21,6 +23,7 @@ namespace CBSMonitoring.Controllers
         }
         // GET: api/<FormSectionController>
         [HttpGet("GetFormSectionById/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetFormSectionById(int id)
         {
             var result = await _fsService.GetFormSectionById(id);
@@ -49,6 +52,7 @@ namespace CBSMonitoring.Controllers
 
         // POST api/<FormSectionController>
         [HttpPost("CreateFormSection")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> CreateFormSection([FromForm] FormSectionRequest fs)
         {
             if (!ModelState.IsValid)
@@ -67,6 +71,7 @@ namespace CBSMonitoring.Controllers
 
         // PUT api/<FormSectionController>/5
         [HttpPut("UpdateFormSection/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> UpdateFormSection(int id, [FromForm] FormSectionRequest fs)
         {
             if (!ModelState.IsValid)
@@ -86,6 +91,7 @@ namespace CBSMonitoring.Controllers
 
         // DELETE api/<FormSectionController>/5
         [HttpDelete("DeleteFormSection/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> DeleteFormSection(int id)
         {
             var result = await _fsService.DeleteFormSection(id);
