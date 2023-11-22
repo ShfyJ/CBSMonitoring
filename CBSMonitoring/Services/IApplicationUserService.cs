@@ -14,7 +14,7 @@ namespace CBSMonitoring.Services
         Task<Result<string>> GetCurrentUserClaim(string claim);
         Task<Result<IEnumerable<string?>>> GetUserRoles();
         Task<Result<string>> ChangeUserStatus(string userName);
-        Task<Result<string>> UpdateUserInfo(UserUpdateRequest request);
+        Task<Result<List<string>>> UpdateUserInfo(UserUpdateRequest request);
         Task<Result<string>> UpdateSelfInfo(UserSelfUpdateRequest request);
     }
 }

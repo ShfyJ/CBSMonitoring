@@ -58,11 +58,14 @@ namespace CBSMonitoring.Services
                 return await Result<string>.FailAsync($"User creation failed! Please check user details and try again.");
             }
 
-            if (!await _roleManager.RoleExistsAsync(request.Role))
-                await _roleManager.CreateAsync(new IdentityRole(request.Role));
+            foreach(var role in request.Roles)
+            {
+                if (!await _roleManager.RoleExistsAsync(role))
+                    await _roleManager.CreateAsync(new IdentityRole(role));
 
-            if (await _roleManager.RoleExistsAsync(UserRoles.User))
-                await _userManager.AddToRoleAsync(user, request.Role);
+                else
+                    await _userManager.AddToRoleAsync(user, role);
+            }
 
             return await Result<string>.SuccessAsync($"User created successfully!");
         }
@@ -88,7 +91,7 @@ namespace CBSMonitoring.Services
 
             foreach (var userRole in userRoles)
             {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole)) ;
             }
             string token = GenerateToken(authClaims);
 

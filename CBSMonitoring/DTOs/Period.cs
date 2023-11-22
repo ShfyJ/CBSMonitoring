@@ -12,5 +12,28 @@
         }
 
         public Period() { }
+
+        public override bool Equals(object? obj)
+        {
+            // Check for null and compare run-time types.
+            if (obj == null || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+
+            Period p = (Period)obj;
+            return (Year == p.Year) && (Quarter == p.Quarter);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Year, Quarter);
+        }
+
+        //// Optional: ToString override for easier debugging
+        //public override string ToString()
+        //{
+        //    return $"Year: {Year}, Quarter: {Quarter}";
+        //}
     }
 }

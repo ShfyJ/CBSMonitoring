@@ -7,6 +7,8 @@ using ERPBlazor.Shared.Wrappers;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Web.Http;
+using System.Net;
 using static CBSMonitoring.DTOs.Requests;
 using static CBSMonitoring.DTOs.Responses;
 
@@ -22,6 +24,7 @@ namespace CBSMonitoring.Services
         private record QbWithPoint(string QuestionBlockNumber, int MaxScore);
         private record MRecordsSectionNum(int OrganizationId, string SectionNumber);
         private record EvaluationRecord(int OrganizationId, string BlockNumber, double Score);
+        private record Score(double Point, int OrganizationId);
         public RankingService(IGenericRepository rankingRepository, IMapper mapper, 
                                 IApplicationUserService applicationUserService)
         {
@@ -80,7 +83,8 @@ namespace CBSMonitoring.Services
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<ScoreResponse>.FailAsync(orgIdResult.Messages);
+                return await Result<ScoreResponse>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             scoreRequest.OrganizationId = orgIdResult.Data;
@@ -222,7 +226,8 @@ namespace CBSMonitoring.Services
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<IEnumerable<ScoreResponse>>.FailAsync(orgIdResult.Messages);
+                return await Result<IEnumerable<ScoreResponse>>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             scoreRequest.OrganizationId = orgIdResult.Data;
@@ -242,10 +247,24 @@ namespace CBSMonitoring.Services
 
             // Build the response list
             var response = indicators.Select(i =>
-                evaluationLookup.TryGetValue(i.QuestionBlockNumber, out var evaluation)
-                    ? new ScoreResponse(evaluation.Discriminator, evaluation.Score, evaluation.EvaluatedTime, evaluation.Comment, true, i.MaxScore)
-                    : new ScoreResponse(i.QuestionBlockNumber, null, null, null, false, i.MaxScore)
-            ).OrderByDescending(s => s.Score).ToList();
+                evaluationLookup
+                .TryGetValue(i.QuestionBlockNumber, out var evaluation)
+                    ? new ScoreResponse(
+                        evaluation.Discriminator, 
+                        evaluation.Score, 
+                        evaluation.EvaluatedTime, 
+                        evaluation.Comment, 
+                        true, 
+                        i.MaxScore)
+                    : new ScoreResponse(
+                        i.QuestionBlockNumber, 
+                        null, 
+                        null, 
+                        null, 
+                        false, 
+                        i.MaxScore)
+            ).OrderByDescending(s => s.Score)
+            .ToList();
 
             return await Result<IEnumerable<ScoreResponse>>.SuccessAsync(response);
         }
@@ -283,6 +302,96 @@ namespace CBSMonitoring.Services
 
             return await Result<string>.SuccessAsync($"Success");
         }
+        public async Task<Result<ScoreStatsReponse>> GetStatisticsForPeriod(int periodOfQuarters, int organizationId = 0) // for the last x quarters
+        {
+            var organizationIdResult = await GetOrganizationId(organizationId);
+
+            if (!organizationIdResult.Succeeded)
+            {
+                return await Result<ScoreStatsReponse>.FailAsync(
+                    organizationIdResult.Code, organizationIdResult.Messages);
+            }
+
+            organizationId = organizationIdResult.Data;
+
+            var organizationName = (await _rankingRepository.GetFirstByParameterAsync<Organization>(
+                e => e.OrganizationId == organizationId))?
+                .ShortName;
+
+            // get maximum possible score
+            var maxScore = (await _rankingRepository.SelectAllAsync<QuestionBlock, Score>(
+                        e => new(e.MaxScore, 0)))
+                        .Sum(s => s.Point);
+
+            // get scores of organization for the given period
+            var scoreForPeriods = await GetScoresForPeriod(periodOfQuarters, maxScore);
+
+            ScoreStatsReponse response = new()
+            {
+                 OrganizationId = organizationId,
+                 OrganizationName = organizationName,
+                 Scores = scoreForPeriods
+            };
+
+            return await Result<ScoreStatsReponse>.SuccessAsync(response);
+            
+        }             
+        public async Task<Result<IEnumerable<ScoreForPeriod>>> GetAllInOneStatiscticsForPeriod(int periodOfQuarters)
+        {
+            // get the count of active organizations
+            var orgsCount = (await _rankingRepository.GetAllAsync<Organization>(o => o.Status)).Count();
+            // get maximum possible score
+            var maxScore = (await _rankingRepository.SelectAllAsync<QuestionBlock, Score>(
+                        e => new(e.MaxScore, 0)))
+                        .Sum(s => s.Point) * orgsCount;
+
+            var statistics = await GetScoresForPeriod(periodOfQuarters, maxScore);
+
+            return await Result<IEnumerable<ScoreForPeriod>>.SuccessAsync(statistics);
+        }
+        public async Task<Result<IEnumerable<StatsForCertainCriteriaResponse>>> GetStatsForCriteria(double percentageCriteria, int periodOfQuarters)
+        {
+            // Ensure valid input values
+            periodOfQuarters = Math.Max(periodOfQuarters, 1);
+            percentageCriteria = Math.Min(percentageCriteria, 100.0);
+
+            var currentPeriod = new Period();
+            List<StatsForCertainCriteriaResponse> response = new();
+
+            // get maximum possible score
+            var maxScore = (await _rankingRepository.SelectAllAsync<QuestionBlock, Score>(
+                        e => new(e.MaxScore, 0)))
+                        .Sum(s => s.Point);
+
+            // get organizations only once and reuse
+            var orgsLookup = (await _rankingRepository.SelectAllAsync<Organization, Org>(
+                        o => new(o.OrganizationId, o.ShortName),
+                        o => o.Status))
+                        .ToDictionary(o => o.OrganizationId, o => o.Name);           
+
+            for (int i = 0, quarter = currentPeriod.Quarter + 1,
+                year = currentPeriod.Year; periodOfQuarters > i; i++)
+            {
+                year = quarter - 1 > 0 ? year : year - 1;
+                quarter = quarter - 1 > 0 ? quarter - 1 : 4;
+
+                var scores = (await _rankingRepository
+                        .SelectAllAsync<Evaluation, Score>(
+                            e => new(e.Score, e.OrganizationId),
+                            e => e.Year == year && e.QuarterIndex == quarter))
+                        .GroupBy(s => s.OrganizationId)
+                        .Select(g => new Score(g.Sum(s => s.Point), g.Key))
+                        .Where(s => s.Point / maxScore * 100 > percentageCriteria);
+
+                var orgNames = scores.Select(s => orgsLookup.TryGetValue(s.OrganizationId, out var name) ? name : null);
+
+                response.Add(new StatsForCertainCriteriaResponse(orgNames, new Period(year, quarter)));
+            }
+
+            return await Result<IEnumerable<StatsForCertainCriteriaResponse>>.SuccessAsync(response);
+        }
+       
+        #region private methods
         private async Task<bool> ValidateScore(string indicator, double score)
         {
             var questionBlock = await _rankingRepository.GetFirstByParameterAsync<QuestionBlock>(e => e.BlockNumber == indicator)
@@ -301,14 +410,18 @@ namespace CBSMonitoring.Services
                 2 => await _rankingRepository.GetByIdAsync<Organization>(scoreRequest.OrganizationId) is not null,
                 _ => false
             };
-        private async Task<Result<int>> GetOrganizationId(int organizationId)
+        private async Task<Result<int>> GetOrganizationId(int organizationId = 0)
         {
             if (organizationId != 0 && organizationId > 0)
             {
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
-                if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
-                    return await Result<int>.FailAsync($"{isUserAuthorizedResult.Messages}");
+                if (!isUserAuthorizedResult.Succeeded)
+                    return await Result<int>.FailAsync(String.Join(",", isUserAuthorizedResult.Messages));
+                if (!isUserAuthorizedResult.Data)
+                    return await Result<int>.FailAsync(
+                        HttpStatusCode.Unauthorized, 
+                        new List<string> {$"you are not authorized to get info of organization with id = {organizationId}"});
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
@@ -316,7 +429,7 @@ namespace CBSMonitoring.Services
 
             if (!claimResult.Succeeded)
             {
-                return await Result<int>.FailAsync(claimResult.Messages);
+                return await Result<int>.FailAsync(String.Join(",", claimResult.Messages));
             }
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
@@ -325,5 +438,32 @@ namespace CBSMonitoring.Services
 
             return await Result<int>.SuccessAsync(organizationId);
         }
+        private async Task<List<ScoreForPeriod>> GetScoresForPeriod(int periodOfQuarters, double maxScore)
+        {
+            var currentPeriod = new Period();
+
+            // Ensure valid input values
+            periodOfQuarters = Math.Max(periodOfQuarters, 1);
+
+            List<ScoreForPeriod> scoreForPeriods = new();
+
+            for (int i = 0, quarter = currentPeriod.Quarter + 1,
+                year = currentPeriod.Year; periodOfQuarters > i; i++)
+            {
+                year = quarter - 1 > 0 ? year : year - 1;
+                quarter = quarter - 1 > 0 ? quarter - 1 : 4;
+
+                var overallScore = (await _rankingRepository.SelectAllAsync<Evaluation, Score>(
+                        e => new(e.Score, 0),
+                         e => e.Year == year && e.QuarterIndex == quarter))
+                        .Sum(e => e.Point);
+                var scorePercentage = (overallScore / maxScore) * 100;
+                var scoreForPeriod = new ScoreForPeriod(year, quarter, overallScore, scorePercentage);
+                scoreForPeriods.Add(scoreForPeriod);
+            }
+
+            return scoreForPeriods;
+        }
+        #endregion
     }
 }

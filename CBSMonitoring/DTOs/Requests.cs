@@ -19,7 +19,7 @@ namespace CBSMonitoring.DTOs
             [Required(ErrorMessage = "Password is required")]
             public string Password { get; init; }
             [Required(ErrorMessage = "Role is required")]
-            public string Role { get; init; }
+            public List<string> Roles { get; init; }
             #nullable enable
             public string? Position { get; init; } = null;
             public string? PhoneNumber { get; init; } = null;
@@ -43,6 +43,10 @@ namespace CBSMonitoring.DTOs
 
             [Required(ErrorMessage = "Organization is required")]
             public int OrganizationId { get; init; }
+
+            #nullable enable
+            public List<string>? Roles { get; init; }
+            #nullable disable
         }
 
         public record UpdatePasswordRequest(string OldPassword, string NewPassword);

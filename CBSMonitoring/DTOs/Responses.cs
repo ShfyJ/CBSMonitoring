@@ -1,10 +1,11 @@
-﻿using CBSMonitoring.Webframework;
+﻿using CBSMonitoring.Model;
+using CBSMonitoring.Webframework;
 
 namespace CBSMonitoring.DTOs
 {
     public class Responses
     {
-        public record User(string? UserName, string? Email, string? FullName, string OrganizationName, string Position, string? PhoneNumber);
+        public record User(string? UserName, string? Email, bool IsActive, IEnumerable<string> Roles, string? FullName, string OrganizationName, int OrganizationId, string Position, string? PhoneNumber);
         public record UpdatePasswordResponse(Enum Flag, string Message);
         public class ReportResponse 
         {
@@ -71,7 +72,7 @@ namespace CBSMonitoring.DTOs
             #nullable enable
             [PropertyOrder(6)]
             [PropertyDisplay(true)]
-            public string? Comment { get; init; } = null;
+            public string? Comments { get; init; }
         }
         public record QualificationImprovedEmployeeResponse 
         {
@@ -110,7 +111,8 @@ namespace CBSMonitoring.DTOs
         } 
 
         public record QuestionBlockResponse(int BlockId, string BlockNumber, string BlockName,int MaxScore, 
-                                                int? SectionCount=null, double? Completion = null, double? Score = null, int? EvaluationId = null);
+                                                int? SectionCount=null, double? Completion = null, double? Score = null, int? EvaluationId = null, string Comment = null, 
+                                                bool HasAnyReportAfterEvaluation = false, int NumberOfReportsAfterEvaluation = 0);
         public record RawQuestionBlockResponse(int BlockId, string BlockNumber, string BlockName, bool IsActive,
                                                 int MaxScore, int? SectionCount = null);
         public record FormSectionResponse 
@@ -127,6 +129,7 @@ namespace CBSMonitoring.DTOs
             string Address, string PhoneNumber, string Email, string Fax, string EXat, int NumberOfEmployees);
         public record OrgShortInfoResponse(int OrganizationId, string FullName);
         public record MonitoringIndicatorWithQbsResponse(int Id, string Name, IEnumerable<QuestionBlockResponse> QuestionBlocks);
+        public record MonitoringIndicatorWithRawQbsResponse(int Id, string Name, IEnumerable<RawQuestionBlockResponse> QuestionBlocks);
         public record MonitoringIndicatorResponse(int Id, string Name, bool IsActive, int QbCount);
         public record ScoreResponse(string Discriminator, double? Score, DateTime? EvaluatedTime, string Comment = null, bool IsEvaluated = false, int? BlockMaxScore = null); //Discriminator could be Organization Name or Quesiton Block Name
         public class RankingResponse 
@@ -156,5 +159,15 @@ namespace CBSMonitoring.DTOs
 
             public RankingResponse() { }
         } 
+        public class ScoreStatsReponse
+        {
+            public int OrganizationId { get; init; }
+            public string OrganizationName { get; init; }
+            public List<ScoreForPeriod> Scores { get; init; }
+        }
+        public record StatsForCertainCriteriaResponse(IEnumerable<string> Orgs, Period Period);
+        public record StatsForReportCompletionResponse(int OrganizationId, string OrganizationName, IEnumerable<CompletionForPeriod> CompletionPercentages);
+        
+        
     }
 }

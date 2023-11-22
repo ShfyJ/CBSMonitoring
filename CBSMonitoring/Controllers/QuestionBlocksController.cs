@@ -65,6 +65,19 @@ namespace CBSMonitoring.Controllers
             return Ok(result);
         }
 
+        [HttpPost("GetRawQuestionBlocks")]
+        public async Task<IActionResult> GetRawQuestionBlocks()
+        {
+            var result = await _qbService.GetRawQuestionBlocksWithIndicators();
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Messages);
+            }
+
+            return Ok(result);
+        }
+
         [HttpPut("UpdateQuestionBlock/{id}")]
         [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> UpdateQuestionBlock([FromForm] QuestionBlockRequest qb, int id)

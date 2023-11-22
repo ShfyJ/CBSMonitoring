@@ -1,4 +1,6 @@
-﻿namespace ERPBlazor.Shared.Wrappers
+﻿using System.Net;
+
+namespace ERPBlazor.Shared.Wrappers
 {
     public class Result : IResult
     {
@@ -9,6 +11,8 @@
         public List<string> Messages { get; set; } = new List<string>();
 
         public bool Succeeded { get; set; }
+
+        public HttpStatusCode Code { get; set; }
 
         public static IResult Fail()
         {
@@ -83,6 +87,16 @@
             return new Result<T> { Succeeded = false, Data = data };
         }
 
+        public static Result<T> Fail(HttpStatusCode code)
+        {
+            return new Result<T> { Succeeded = false, Code = code};
+        }
+
+        public static Result<T> Fail(HttpStatusCode code, List<string> messages)
+        {
+            return new Result<T> { Succeeded = false, Code = code, Messages = messages };
+        }
+
         public new static Result<T> Fail(List<string> messages)
         {
             return new Result<T> { Succeeded = false, Messages = messages };
@@ -103,9 +117,18 @@
             return Task.FromResult(Fail(messages));
         }
 
-        public new static Task<Result<T>> FailAsync(T Data)
+        public static Task<Result<T>> FailAsync(T Data)
         {
             return Task.FromResult(Fail(Data));
+        }
+        public static Task<Result<T>> FailAsync(HttpStatusCode code)
+        {
+            return Task.FromResult(Fail(code));
+        }
+
+        public static Task<Result<T>> FailAsync(HttpStatusCode code, List<string> messages)
+        {
+            return Task.FromResult(Fail(code, messages));
         }
 
         public new static Result<T> Success()

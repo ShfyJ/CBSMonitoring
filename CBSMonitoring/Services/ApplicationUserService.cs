@@ -12,6 +12,7 @@ using static CBSMonitoring.DTOs.Responses;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using static CBSMonitoring.DTOs.Requests;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CBSMonitoring.Services
 {
@@ -72,15 +73,25 @@ namespace CBSMonitoring.Services
 
         public async Task<Result<IEnumerable<User>>> GetAllUsers()
         {
+            var usersWithRoles = new List<User>();
+            
             var users = await _userManager.Users
                 .Include(u => u.Organization)
-                .Select(u => new User(u.UserName, u.Email, u.FullName, u.Organization.FullName, u.Position, u.PhoneNumber))
                 .ToListAsync();
 
-            var task = Task.Delay(5000);
-            task.Wait();
+            foreach (var u in users)
+            {
+                var roles = await _userManager.GetRolesAsync(u); // Async call
 
-            return await Result<IEnumerable<User>>.SuccessAsync(users);
+                var user = new User(u.UserName, u.Email, u.IsActive, roles, u.FullName, u.Organization.FullName, u.OrganizationId, u.Position, u.PhoneNumber);
+
+                usersWithRoles.Add(user);
+            }
+
+            //var task = Task.Delay(5000);
+            //task.Wait();
+
+            return await Result<IEnumerable<User>>.SuccessAsync(usersWithRoles);
 
         }
 
@@ -111,9 +122,17 @@ namespace CBSMonitoring.Services
                 return await Result<string>.FailAsync($"No user found with this user name = {userName}");
             }
 
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTime.Now.AddYears(1000);
-            user.IsActive = false;
+            if(user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
+            {
+                user.LockoutEnd = DateTime.Now; 
+                user.IsActive = false;
+            }
+
+            else
+            {
+                user.LockoutEnd = DateTime.Now.AddYears(1000);
+                user.IsActive = true;
+            }
 
             var updateResult = await _userManager.UpdateAsync(user);
 
@@ -123,25 +142,53 @@ namespace CBSMonitoring.Services
             return await Result<string>.SuccessAsync($"Success");
         }
 
-        public async Task<Result<string>> UpdateUserInfo(UserUpdateRequest request)
+        public async Task<Result<List<string>>> UpdateUserInfo(UserUpdateRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 
             if(user == null)
             {
-                return await Result<string>.FailAsync($"No user found with user name = {request.UserName}");
+                return await Result<List<string>>.FailAsync($"No user found with user name = {request.UserName}");
             }
+
+            var messages = new List<string?>();
 
             try
             {
-                _mapper.Map(request, user);
+                if(!request.Roles.IsNullOrEmpty()) 
+                {
+                    var currentRoles = await _userManager.GetRolesAsync(user);
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+                    if (removeResult.Succeeded)
+                    {
+                        messages.Add($"Old roles are removed!");
+                        var addResult = await _userManager.AddToRolesAsync(user, request.Roles!);
+                        if (!addResult.Succeeded)
+                        {                            
+                            messages.Add($"Failed to add new roles!");
+                            messages.Add(removeResult.Errors.ToString());
+                        }
+                    }
+
+                    else
+                    {
+                        messages.Add($"Failed to remove old roles!");
+                        messages.Add(removeResult.Errors.ToString());
+                    }
+                    
+                }
+
+                _mapper.Map(request, user);                
                 await _userManager.UpdateAsync(user);
 
-                return await Result<string>.SuccessAsync($"Success");
+                messages.Add($"User info seccussfully updated!");
+                return await Result<List<string>>.SuccessAsync(messages!);
             }
             catch(Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                messages.Add(ex.Message);
+                return await Result<List<string>>.FailAsync(messages!);
             }
            
         }

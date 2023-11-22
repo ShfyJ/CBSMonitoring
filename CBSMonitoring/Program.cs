@@ -124,7 +124,8 @@ builder.Services
     {
         opt.AddPolicy(name: "CorsPolicy", builder =>
         {
-            builder.AllowAnyOrigin()
+            builder//WithOrigins("https://ib.ung.uz", "http://192.168.88.217")
+            .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader()
             .WithExposedHeaders("Content-Disposition");

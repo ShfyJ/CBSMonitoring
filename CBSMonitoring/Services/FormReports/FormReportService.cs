@@ -23,12 +23,12 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Net;
 
 namespace CBSMonitoring.Services.FormReports
 {
     public class FormReportService : IMonitoringFactory
     {
-
         private readonly IGenericRepository _genericRepository;
         private readonly IFileWorkRoom _fileWorkRoom;
         private readonly IMapper _mapper;
@@ -123,7 +123,8 @@ namespace CBSMonitoring.Services.FormReports
 
                 if (!orgIdResult.Succeeded)
                 {
-                    return await Result<string>.FailAsync(orgIdResult.Messages);
+                    return await Result<string>.FailAsync(
+                        orgIdResult.Code, orgIdResult.Messages);
                 }
 
                 report.OrganizationId = orgIdResult.Data;
@@ -206,7 +207,8 @@ namespace CBSMonitoring.Services.FormReports
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<object>.FailAsync(orgIdResult.Messages);
+                return await Result<object>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             reportRequest.OrganizationId = orgIdResult.Data;
@@ -253,7 +255,7 @@ namespace CBSMonitoring.Services.FormReports
             if (report == null)
                 return await Result<object>.FailAsync($"Current quarter report with section number = {reportRequest.SectionNumber} " +
                                                         $"and organization Id = {reportRequest.OrganizationId} not found!");
-
+            // Map report object into dto object
             var monitoringDto = _mapper.Map<TDto>(report);
 
             var sectionNumber = monitoringDto.GetType().GetProperty(nameof(BaseFormDto.SectionNumber))!.GetValue(monitoringDto)!.ToString();
@@ -261,9 +263,11 @@ namespace CBSMonitoring.Services.FormReports
             if (section == null)
                 return await Result<object>.FailAsync($"Section with id={sectionNumber} not found!");
 
+            // Fetch form items connected to this section
             var items = await _genericRepository.GetAllAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
                                                                             query => query.Include(e => e.FormItemType));
 
+            // Generate a list where properties' information (name, value, type,etc.) of the report object stored
             List<ReportResponse> result = GetPropertiesAndValues(monitoringDto, items.ToArray());
 
             return await Result<object>.SuccessAsync(result);
@@ -279,7 +283,8 @@ namespace CBSMonitoring.Services.FormReports
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<object>.FailAsync(orgIdResult.Messages);
+                return await Result<object>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             reportRequest.OrganizationId = orgIdResult.Data;
@@ -291,6 +296,8 @@ namespace CBSMonitoring.Services.FormReports
             return await Result<object>.SuccessAsync(finalResponses);
 
         }
+
+        #region private methods
         private async Task<Result<OrgMonitoring>> GetFilledEntity<T>(T report, DocInfo docInfo, IFormCollection? fileItems = null)
         where T : OrgMonitoring
         {
@@ -402,20 +409,25 @@ namespace CBSMonitoring.Services.FormReports
             
             int Order = order;
 
+            // Get object type properties including parent class properties
             var properties = obj.GetType().GetProperties()
                                     .Where(p => p.GetCustomAttribute<PropertyOrderAttribute>() != null)
                                     .OrderBy(p => p.GetCustomAttribute<PropertyOrderAttribute>()!.Order).ToArray();
-
+            
+            // Generate FormItem array for the given object
             var selectedItems = GenerateSelectedItems(properties, formItems);
 
+            /// => FormItems length may not be equal to properties length 
+            /// as an object property can be collection of another object connected to multiple form items
             for (int i=0; i<properties.Length; i++)
-            {
+            {               
                 var orderAttr = properties[i].GetCustomAttribute<PropertyOrderAttribute>();
 
                 bool toBeDisplayed = properties[i].GetCustomAttribute<PropertyDisplayAttribute>() != null 
                                         && properties[i].GetCustomAttribute<PropertyDisplayAttribute>()!.Display
                                         || properties[i].GetCustomAttribute<PropertyDisplayAttribute>() == null;
 
+                // if property should be displayed then name it with form item label else just property name
                 string propertyLabel = !toBeDisplayed ? properties[i].Name : (selectedItems[i] != null ? selectedItems[i].ItemLabel : string.Empty);
 
                 string itemType = !toBeDisplayed ? string.Empty : (selectedItems[i] != null ? selectedItems[i].FormItemType.TypeName : string.Empty);
@@ -426,8 +438,10 @@ namespace CBSMonitoring.Services.FormReports
 
                 bool isFileWithInfo = itemType.Equals("fileWithInfo");
 
+                // if the form item is a file type with metadata then fetch its metadata
                 var fileInfo = isFileWithInfo ? GetFileInfo(value == null ? 0 : (int)value).Result : null;
 
+                // if the object property is a collection (except string) then generate form items list of this collection type object
                 if (value is IEnumerable<object> collection && value is not string) // Ensure strings aren't treated as collections
                 {
                     var collectionResponses = new List<List<ReportResponse>>();
@@ -577,10 +591,12 @@ namespace CBSMonitoring.Services.FormReports
             // Convert items to a dictionary for faster lookup
             var itemsDict = formItems.ToDictionary(item => item.ItemName, item => item);
 
+            var namesForFileType = new List<string>() {"FileId","FileIds"};
+
             // Go through Properties and look for property name match in items dictionary and update SelectedItems with them
             foreach (var property in properties.Select((prop, idx) => new { prop, idx }))
             {
-                var propertyName = property.prop.Name.Equals("FileId") ? "FileItem" : property.prop.Name;
+                var propertyName = namesForFileType.Any(n => n.Equals(property.prop.Name)) ? "FileItem" : property.prop.Name;
 
                 if (itemsDict.TryGetValue(propertyName, out var foundItem))
                 {
@@ -590,11 +606,11 @@ namespace CBSMonitoring.Services.FormReports
 
             return SelectedItems;
             
-        }
-        // Assuming that there can be only one list items in the array
+        }      
         private static string? GetTheLabelOfList(FormItem[] items)
         {
-            foreach(var item in items)
+            // Assuming that there can be only one list items in the array
+            foreach (var item in items)
             {
                 if (item.IsListItem)
                 {
@@ -617,16 +633,21 @@ namespace CBSMonitoring.Services.FormReports
             {
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
-                if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
-                    return await Result<int>.FailAsync($"{isUserAuthorizedResult.Messages}");
+                if (!isUserAuthorizedResult.Succeeded)
+                    return await Result<int>.FailAsync(String.Join(",", isUserAuthorizedResult.Messages));
+                if (!isUserAuthorizedResult.Data)
+                    return await Result<int>.FailAsync(
+                        HttpStatusCode.Unauthorized,
+                        new List<string> { $"you are not authorized to get info of organization with id = {organizationId}" });
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
+
             var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
 
             if (!claimResult.Succeeded)
             {
-                return await Result<int>.FailAsync(claimResult.Messages);
+                return await Result<int>.FailAsync(String.Join(",", claimResult.Messages));
             }
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
@@ -635,5 +656,7 @@ namespace CBSMonitoring.Services.FormReports
 
             return await Result<int>.SuccessAsync(organizationId);
         }
+
+        #endregion
     }
 }

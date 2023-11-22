@@ -110,7 +110,13 @@ namespace CBSMonitoring.Controllers
                 }
 
                 if (!Convert.ToBoolean(objectProperty!.GetValue(returnedObject)))
+                {
+                    if (returnedObject.GetType().GetProperty(nameof(Result.Code))!.GetValue(returnedObject)!.Equals(System.Net.HttpStatusCode.Unauthorized))
+                        return Unauthorized(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
+
                     return BadRequest(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
+                }
+                    
 
                 return Ok(returnedObject);
             }
