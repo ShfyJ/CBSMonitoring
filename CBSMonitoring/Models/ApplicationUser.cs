@@ -21,5 +21,6 @@ namespace CBSMonitoring.Models
         [Required]
         public string Position { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
+        public bool IsFirstLogin { get; set; } = true;
     }
 }

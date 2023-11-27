@@ -9,10 +9,9 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class FormSectionsController : ControllerBase
     {
         private readonly IFormSectionService _fsService;
@@ -30,7 +29,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -44,7 +43,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -57,13 +56,17 @@ namespace CBSMonitoring.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = ModelState.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+                return BadRequest(errors);
             }
 
             var result = await _fsService.AddFormSection(fs);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -83,7 +86,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -97,7 +100,7 @@ namespace CBSMonitoring.Controllers
             var result = await _fsService.DeleteFormSection(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }

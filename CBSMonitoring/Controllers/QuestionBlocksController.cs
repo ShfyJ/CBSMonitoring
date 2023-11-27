@@ -11,7 +11,7 @@ namespace CBSMonitoring.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class QuestionBlocksController : ControllerBase
     {
 
@@ -29,7 +29,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -47,7 +47,7 @@ namespace CBSMonitoring.Controllers
             var result = await _qbService.AddQuestionBlock(qb);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -59,7 +59,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -72,7 +72,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -90,7 +90,7 @@ namespace CBSMonitoring.Controllers
             var result = await _qbService.UpdateQuestionBlock(qb, id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             else
                 return Ok(result);
 
@@ -103,7 +103,7 @@ namespace CBSMonitoring.Controllers
             var result = await _qbService.RemoveQuestionBlock(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             else
             {

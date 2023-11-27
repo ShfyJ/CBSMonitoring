@@ -4,5 +4,6 @@
     {
         public const string OrganizationId = "org_id";
         public const string OrganizationName = "org_name";
+        public const string IsFirstLogin = "isFirstLogin";
     }
 }

@@ -15,15 +15,15 @@ using CBSMonitoring.Constants;
 
 namespace CBSMonitoring.Controllers
 {
-    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class MonitoringReportsController : ControllerBase
     {
         private readonly FormFactory _formFactory;
         private readonly IMonitoringFactory _monitoringFactory;
         private readonly Type _classType;
+        private record Error(List<string> Messages);
         public MonitoringReportsController(IMonitoringFactory monitoringFactory)
         {
             _formFactory = new ConcreteFormFactory();
@@ -112,17 +112,17 @@ namespace CBSMonitoring.Controllers
                 if (!Convert.ToBoolean(objectProperty!.GetValue(returnedObject)))
                 {
                     if (returnedObject.GetType().GetProperty(nameof(Result.Code))!.GetValue(returnedObject)!.Equals(System.Net.HttpStatusCode.Unauthorized))
-                        return Unauthorized(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
+                        return Unauthorized(returnedObject);//.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
 
-                    return BadRequest(returnedObject.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
+                    return BadRequest(returnedObject);//.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
                 }
                     
-
                 return Ok(returnedObject);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                var Messages = new List<string> {ex.Message};
+                return BadRequest(new Error(Messages));
             }
         }
 

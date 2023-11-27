@@ -63,6 +63,7 @@ builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 //builder.Services.AddScoped<IMonitoringIndicatorService, MonitoringIndicatorService>();
 builder.Services.AddScoped<TokenService, TokenService>();
 builder.Services.AddHttpContextAccessor();
+//builder.Services.AddScoped<AuthorizeFirstLoginAttribute>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -118,6 +119,12 @@ builder.Services.AddAuthentication(options =>
             ),
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequirePasswordChange", policy =>
+        policy.RequireClaim("IsFirstLogin", "False"));
+});
 
 builder.Services
     .AddCors(opt =>

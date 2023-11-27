@@ -27,10 +27,10 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Failed: {ex.Message}");
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"success");
+            return await Result<string>.SuccessAsync($"Успешно!");
 
         }
 
@@ -40,7 +40,7 @@ namespace CBSMonitoring.Services
 
             if (item == null)
             {
-                return await Result<string>.FailAsync($"item with id={id} not found!");
+                return await Result<string>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
             }
 
             try
@@ -49,10 +49,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Failed:{ex.Message}");
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"success");
+            return await Result<string>.SuccessAsync($"Успешно!");
 
         }
 
@@ -63,7 +63,7 @@ namespace CBSMonitoring.Services
 
             if (itemToUpdate == null)
             {
-                return await Result<string>.FailAsync($"item with id={id} not found");
+                return await Result<string>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
             }
 
             _mapper.Map(item, itemToUpdate);
@@ -74,10 +74,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<FormItemResponse>> GetFormItem(int id)
@@ -85,7 +85,7 @@ namespace CBSMonitoring.Services
             var item = await _genericRepository.GetByIdAsync<FormItem>(id);
 
             if (item == null)
-                return await Result<FormItemResponse>.FailAsync($"item with id={id} not found");
+                return await Result<FormItemResponse>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
 
             return await Result<FormItemResponse>.SuccessAsync(_mapper.Map<FormItemResponse>(item));
         }
@@ -109,7 +109,7 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<FormItemResponse>>.FailAsync(ex.Message);
+                return await Result<IEnumerable<FormItemResponse>>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
 

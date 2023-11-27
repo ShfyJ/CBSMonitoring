@@ -37,7 +37,7 @@ namespace CBSMonitoring.Controllers
                     return BadRequest("Invalid payload");
                 var result = await _authService.Login(request);
                 if (!result.Succeeded)
-                    return BadRequest(result.Messages);
+                    return BadRequest(result);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -51,6 +51,7 @@ namespace CBSMonitoring.Controllers
         [HttpPost]
         [Route("registeration")]
         [Authorize(Roles = UserRoles.Admin)]
+        [Authorize(Policy = "RequirePasswordChange")]
         public async Task<IActionResult> Register(RegistrationRequest request)
         {
             try
@@ -60,7 +61,7 @@ namespace CBSMonitoring.Controllers
                 var result = await _authService.Registeration(request);
                 if (!result.Succeeded)
                 {
-                    return BadRequest(result.Messages);
+                    return BadRequest(result);
                 }
                 return CreatedAtAction(nameof(Register), request);
 

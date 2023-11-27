@@ -9,10 +9,9 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class OrganizationsController : ControllerBase
     {
         private readonly IOrganizationService _organizationService;
@@ -30,7 +29,7 @@ namespace CBSMonitoring.Controllers
             var result = await _organizationService.GetAllOrganizations();
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -42,7 +41,7 @@ namespace CBSMonitoring.Controllers
             var result = await _organizationService.GetAllOrganizationsInShort();
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -54,12 +53,12 @@ namespace CBSMonitoring.Controllers
             var chekingResult = await _applicationUserService.IsUserAuthorizedForThisInfo(id);
 
             if(!chekingResult.Succeeded)
-                return BadRequest(chekingResult.Messages);
+                return Unauthorized(chekingResult);
 
             var result = await _organizationService.GetOrganizationById(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -72,7 +71,7 @@ namespace CBSMonitoring.Controllers
             var result = await _organizationService.AddOrganization(request);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -85,12 +84,12 @@ namespace CBSMonitoring.Controllers
             var chekingResult = await _applicationUserService.IsUserAuthorizedForThisInfo(id);
 
             if (!chekingResult.Succeeded)
-                return BadRequest(chekingResult.Messages);
+                return Unauthorized(chekingResult);
 
             var result = await _organizationService.UpdateOrganizationInfo(request, id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -103,7 +102,7 @@ namespace CBSMonitoring.Controllers
             var result = await _organizationService.Delete(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return Ok(result);
         }

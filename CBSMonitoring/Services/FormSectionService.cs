@@ -5,6 +5,7 @@ using CBSMonitoring.Models;
 using ERPBlazor.Shared.Wrappers;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using static CBSMonitoring.DTOs.Requests;
 using static CBSMonitoring.DTOs.Responses;
 using static System.Collections.Specialized.BitVector32;
@@ -33,10 +34,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Failed:{ex.Message}");
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
 
         }
 
@@ -44,11 +45,11 @@ namespace CBSMonitoring.Services
         {
             var section = await _fsRepository.GetByIdAsync<FormSection>(id);
             if (section == null)
-                return await Result<string>.FailAsync($"form with id={id} not found");
+                return await Result<string>.FailAsync($"Неуспешно: форма с id={id} не найден!");
 
             await _fsRepository.DeleteAsync(section);
 
-            return await Result<string>.SuccessAsync($"success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<string>> EditFormSection(FormSectionRequest section, int id)
@@ -56,7 +57,7 @@ namespace CBSMonitoring.Services
             var formSection = await _fsRepository.GetByIdAsync<FormSection>(id);
 
             if (formSection == null)
-                return await Result<string>.FailAsync($"Form with id={id} not found");
+                return await Result<string>.FailAsync($"Неуспешно: форма с id={id} не найден!");
 
             _mapper.Map(section, formSection);
 
@@ -66,10 +67,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Failed:{ex.Message}");
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<IEnumerable<FormSectionResponse>>> GetAllFormSectionsByQuestionBlockId(int questionBlockId, LevelRequest request)
@@ -79,7 +80,8 @@ namespace CBSMonitoring.Services
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<IEnumerable<FormSectionResponse>>.FailAsync(orgIdResult.Messages);
+                return await Result<IEnumerable<FormSectionResponse>>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             request.OrganizationId = orgIdResult.Data;
@@ -117,7 +119,7 @@ namespace CBSMonitoring.Services
         {
             var section = await _fsRepository.GetByIdAsync<FormSection>(id);
             if (section == null)
-                return await Result<FormSectionResponse>.FailAsync($"Form with id={id} not found!");
+                return await Result<FormSectionResponse>.FailAsync($"Неуспешно: форма с id={id} не найден!");
 
             return await Result<FormSectionResponse>.SuccessAsync(_mapper.Map<FormSectionResponse>(section));
         }
@@ -128,7 +130,7 @@ namespace CBSMonitoring.Services
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
                 if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
-                    return await Result<int>.FailAsync($"{isUserAuthorizedResult.Messages}");
+                    return await Result<int>.FailAsync(isUserAuthorizedResult.Messages);
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
@@ -141,7 +143,7 @@ namespace CBSMonitoring.Services
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
             if (organizationId == 0)
-                return await Result<int>.FailAsync($"Wrong Organizaiton Id : {claimResult.Data}");
+                return await Result<int>.FailAsync($"Неправильный идентификатор организации : {claimResult.Data}");
 
             return await Result<int>.SuccessAsync(organizationId);
         }

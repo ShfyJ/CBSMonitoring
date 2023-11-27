@@ -26,10 +26,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<string>> Delete(int id)
@@ -37,7 +37,7 @@ namespace CBSMonitoring.Services
             var organization = await _orgRepository.GetByIdAsync<Organization>(id);
             if(organization == null)
             {
-                return await Result<string>.FailAsync($"Organization with id={id} not available");
+                return await Result<string>.FailAsync($"Организация с id={id} недоступна!");
             }
 
             try
@@ -46,10 +46,10 @@ namespace CBSMonitoring.Services
             }
             catch(Exception ex)
             {
-                return await Result<string>.FailAsync( ex.Message);
+                return await Result<string>.FailAsync( $"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<IEnumerable<OrganizationResponse>>> GetAllOrganizations()
@@ -71,7 +71,7 @@ namespace CBSMonitoring.Services
             var organization = await _orgRepository.GetByIdAsync<Organization>(id);
 
             if (organization == null)
-                return await Result<OrganizationResponse>.FailAsync($"Organization with id={id} not found!");
+                return await Result<OrganizationResponse>.FailAsync($"Организация с id={id} недоступна!");
 
             return await Result<OrganizationResponse>.SuccessAsync(_mapper.Map<OrganizationResponse>(organization));
         }
@@ -80,7 +80,7 @@ namespace CBSMonitoring.Services
         {
             var organization = await _orgRepository.GetByIdAsync<Organization>(id);
             if (organization == null)
-                return await Result<string>.FailAsync($"Organization with id={id} not found!");
+                return await Result<string>.FailAsync($"Организация с id={id} недоступна!");
 
             try
             {
@@ -88,10 +88,10 @@ namespace CBSMonitoring.Services
             }
             catch(Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
     }
 }

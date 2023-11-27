@@ -10,7 +10,7 @@ namespace CBSMonitoring.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class UsersController : ControllerBase
     {
         private readonly IApplicationUserService _applicationUserService;
@@ -27,7 +27,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -41,7 +41,7 @@ namespace CBSMonitoring.Controllers
             
             if(!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -55,7 +55,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -69,7 +69,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -82,7 +82,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);

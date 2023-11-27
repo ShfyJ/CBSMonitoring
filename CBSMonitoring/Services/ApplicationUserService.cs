@@ -13,6 +13,7 @@ using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using static CBSMonitoring.DTOs.Requests;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace CBSMonitoring.Services
 {
@@ -40,7 +41,7 @@ namespace CBSMonitoring.Services
 
             if (string.IsNullOrEmpty(userRole) || string.IsNullOrEmpty(organizationId))
             {
-                return await Result<bool>.FailAsync("Failed. Check for the request and try again!");
+                return await Result<bool>.FailAsync("Неуспешно: Проверьте наличие запроса и повторите попытку!");
             }
 
             if (userRole == UserRoles.Admin || int.TryParse(organizationId, out var orgId) && orgId == id)
@@ -48,7 +49,7 @@ namespace CBSMonitoring.Services
                 return await Result<bool>.SuccessAsync(true);
             }
             
-            return await Result<bool>.SuccessAsync(false,"You are not authorized for this info");
+            return await Result<bool>.SuccessAsync(false, "У вас нет прав на эту информацию");
 
         }
 
@@ -59,8 +60,8 @@ namespace CBSMonitoring.Services
                 {
                     var claimValue = task.Result;
                     return claimValue != null
-                        ? Result<string>.Success(claimValue, "Success!")
-                        : Result<string>.Fail("Failed to get the claim");
+                        ? Result<string>.Success(claimValue, "Успешно!")
+                        : Result<string>.Fail("Запрошенная информация недоступна");
                 });
         }
 
@@ -83,7 +84,8 @@ namespace CBSMonitoring.Services
             {
                 var roles = await _userManager.GetRolesAsync(u); // Async call
 
-                var user = new User(u.UserName, u.Email, u.IsActive, roles, u.FullName, u.Organization.FullName, u.OrganizationId, u.Position, u.PhoneNumber);
+                var user = new User(u.UserName, u.Email, u.IsActive, roles, u.FullName, 
+                    u.Organization.FullName, u.OrganizationId, u.Position, u.PhoneNumber);
 
                 usersWithRoles.Add(user);
             }
@@ -101,13 +103,13 @@ namespace CBSMonitoring.Services
 
             if (currentUserName == null)
             {
-                return await Result<ApplicationUser>.FailAsync($"No {ClaimTypes.Name} Found!");
+                return await Result<ApplicationUser>.FailAsync($"'{ClaimTypes.Name}' не найдено!");
             }
 
             var user = await _userManager.FindByNameAsync(currentUserName);
             if(user == null)
             {
-                return await Result<ApplicationUser>.FailAsync($"No User Found!");
+                return await Result<ApplicationUser>.FailAsync($"'{currentUserName}' пользователь не найден!");
             }
             
             return await Result<ApplicationUser>.SuccessAsync(user);
@@ -119,7 +121,7 @@ namespace CBSMonitoring.Services
             
             if (user == null)
             {
-                return await Result<string>.FailAsync($"No user found with this user name = {userName}");
+                return await Result<string>.FailAsync($"'{userName}' пользователь не найден!");
             }
 
             if(user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
@@ -137,18 +139,18 @@ namespace CBSMonitoring.Services
             var updateResult = await _userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
-                return await Result<string>.FailAsync($"Failed : {updateResult.Errors}");
+                return await Result<string>.FailAsync($"Неуспешно: {String.Join(", ",updateResult.Errors)}");
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
-        public async Task<Result<List<string>>> UpdateUserInfo(UserUpdateRequest request)
+        public async Task<Result<List<string?>>> UpdateUserInfo(UserUpdateRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 
             if(user == null)
             {
-                return await Result<List<string>>.FailAsync($"No user found with user name = {request.UserName}");
+                return await Result<List<string?>>.FailAsync($"'{request.UserName}' пользователь не найден!");
             }
 
             var messages = new List<string?>();
@@ -162,18 +164,18 @@ namespace CBSMonitoring.Services
 
                     if (removeResult.Succeeded)
                     {
-                        messages.Add($"Old roles are removed!");
+                        messages.Add($"Старые роли удалены!");
                         var addResult = await _userManager.AddToRolesAsync(user, request.Roles!);
                         if (!addResult.Succeeded)
                         {                            
-                            messages.Add($"Failed to add new roles!");
+                            messages.Add($"Не удалось добавить новые роли: {String.Join(". ",addResult.Errors)}");
                             messages.Add(removeResult.Errors.ToString());
                         }
                     }
 
                     else
                     {
-                        messages.Add($"Failed to remove old roles!");
+                        messages.Add($"Не удалось удалить старые роли: {String.Join(". ",removeResult.Errors)}");
                         messages.Add(removeResult.Errors.ToString());
                     }
                     
@@ -182,13 +184,13 @@ namespace CBSMonitoring.Services
                 _mapper.Map(request, user);                
                 await _userManager.UpdateAsync(user);
 
-                messages.Add($"User info seccussfully updated!");
-                return await Result<List<string>>.SuccessAsync(messages!);
+                messages.Add($"Информация о пользователе обновлена!");
+                return await Result<List<string?>>.SuccessAsync(messages);
             }
             catch(Exception ex)
             {
                 messages.Add(ex.Message);
-                return await Result<List<string>>.FailAsync(messages!);
+                return await Result<List<string?>>.FailAsync(messages!);
             }
            
         }
@@ -199,7 +201,7 @@ namespace CBSMonitoring.Services
 
             if (!userResult.Succeeded)
             {
-                return await Result<string>.FailAsync($"{userResult.Messages}");
+                return await Result<string>.FailAsync($"Невозможно получить текущего пользователя: {String.Join(". ",userResult.Messages)}");
             }
 
             try
@@ -207,11 +209,11 @@ namespace CBSMonitoring.Services
                 _mapper.Map(request, userResult.Data);
                 await _userManager.UpdateAsync(userResult.Data);
 
-                return await Result<string>.SuccessAsync($"Success");
+                return await Result<string>.SuccessAsync($"Успешно!");
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Не удалось обновить данные пользователя: {ex.Message}");
             }
 
         }

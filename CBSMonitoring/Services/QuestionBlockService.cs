@@ -41,10 +41,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
 
         public async Task<Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>> GetQuestionBlocksWithIndicators(LevelRequest request)
@@ -57,7 +57,8 @@ namespace CBSMonitoring.Services
 
                 if (!orgIdResult.Succeeded)
                 {
-                    return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync(orgIdResult.Messages);
+                    return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
                 }
 
                 request.OrganizationId = orgIdResult.Data;
@@ -125,7 +126,7 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync(ex.Message);
+                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
         }
@@ -159,7 +160,7 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>.FailAsync(ex.Message);
+                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>.FailAsync($"Неуспешно: {ex.Message}");
             }
         }
         public async Task<Result<RawQuestionBlockResponse>> GetQuestionBlock(int questionBlockId)
@@ -167,7 +168,7 @@ namespace CBSMonitoring.Services
             var qb = await _qbRepository.GetByIdAsync<QuestionBlock>(questionBlockId);
 
             if (qb == null)
-                return await Result<RawQuestionBlockResponse>.FailAsync($"Quesiton block with id={questionBlockId}");
+                return await Result<RawQuestionBlockResponse>.FailAsync($"Блок вопросов с id={questionBlockId} не найден!");
 
             return await Result<RawQuestionBlockResponse>.SuccessAsync(_mapper.Map<RawQuestionBlockResponse>(qb));
         }
@@ -175,7 +176,7 @@ namespace CBSMonitoring.Services
         {
             var questionBlock = await _qbRepository.GetByIdAsync<QuestionBlock>(questionBlockId);
             if (questionBlock == null)
-                return await Result<string>.FailAsync($"Question blocj with id={questionBlockId}");
+                return await Result<string>.FailAsync($"Блок вопросов с id={questionBlockId} не найден!");
 
             try
             {
@@ -184,23 +185,23 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<string>> UpdateQuestionBlock(QuestionBlockRequest questionBlock, int id)
         {
             var qb = await _qbRepository.GetByIdAsync<QuestionBlock>(id);
 
             if (qb == null)
-                return await Result<string>.FailAsync($"Question block with id={id} not found");
+                return await Result<string>.FailAsync($"Блок вопросов с id={id} не найден!");
 
             _mapper.Map(questionBlock, qb);
 
             await _qbRepository.UpdateAsync(qb);
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<StatsForReportCompletionResponse>> GetStatsForReportCompletion(int periodOfQuarters, int organizationId)
         {
@@ -212,7 +213,8 @@ namespace CBSMonitoring.Services
 
             if (!orgIdResult.Succeeded)
             {
-                return await Result<StatsForReportCompletionResponse>.FailAsync(orgIdResult.Messages);
+                return await Result<StatsForReportCompletionResponse>.FailAsync(
+                    orgIdResult.Code, orgIdResult.Messages);
             }
 
             organizationId = orgIdResult.Data;
@@ -262,7 +264,7 @@ namespace CBSMonitoring.Services
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
                 if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
-                    return await Result<int>.FailAsync($"{isUserAuthorizedResult.Messages}");
+                    return await Result<int>.FailAsync(isUserAuthorizedResult.Messages);
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
@@ -275,7 +277,7 @@ namespace CBSMonitoring.Services
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
             if (organizationId == 0)
-                return await Result<int>.FailAsync($"Wrong Organizaiton Id : {claimResult.Data}");
+                return await Result<int>.FailAsync($"Неправильный идентификатор организации: {claimResult.Data}");
 
             return await Result<int>.SuccessAsync(organizationId);
         }

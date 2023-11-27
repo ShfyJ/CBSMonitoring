@@ -11,7 +11,7 @@ namespace CBSMonitoring.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class EvaluationsController : ControllerBase
     {
         private readonly IRankingService _rankingService;
@@ -29,7 +29,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -42,7 +42,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -54,7 +54,7 @@ namespace CBSMonitoring.Controllers
             var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
 
             if (!claimResult.Succeeded)
-                return BadRequest(claimResult.Messages);
+                return BadRequest(claimResult);
 
             scoreRequest.OrganizationId = int.Parse(claimResult.Data);
 
@@ -62,7 +62,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -74,7 +74,7 @@ namespace CBSMonitoring.Controllers
             var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
 
             if (!claimResult.Succeeded)
-                return BadRequest(claimResult.Messages);
+                return BadRequest(claimResult);
 
             scoreRequest.OrganizationId = int.Parse(claimResult.Data);
 
@@ -82,7 +82,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -99,7 +99,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -115,7 +115,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _rankingService.ReEvaluate(reEvaluationRequest);
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             return Ok(result);
         }
 
@@ -126,7 +126,7 @@ namespace CBSMonitoring.Controllers
             var result = await _rankingService.RemoveEvaluation(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             return Ok(result);
         }
 

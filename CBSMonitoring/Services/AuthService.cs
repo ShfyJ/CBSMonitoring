@@ -37,7 +37,7 @@ namespace CBSMonitoring.Services
 
             if (userExists != null)
             {
-                return await Result<string>.FailAsync($"User already exists");
+                return await Result<string>.FailAsync($"Пользователь уже существует!");
             }
 
             ApplicationUser user = new()
@@ -49,13 +49,15 @@ namespace CBSMonitoring.Services
                 Position = request.Position,
                 PhoneNumber = request.PhoneNumber,
                 IsActive = true,
+                IsFirstLogin = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
 
             var createUserResult = await _userManager.CreateAsync(user, request.Password);
             if (!createUserResult.Succeeded)
             {
-                return await Result<string>.FailAsync($"User creation failed! Please check user details and try again.");
+                return await Result<string>.FailAsync($"Создание пользователя не удалось! " +
+                    $"Пожалуйста, проверьте данные пользователя и повторите попытку.");
             }
 
             foreach(var role in request.Roles)
@@ -67,7 +69,7 @@ namespace CBSMonitoring.Services
                     await _userManager.AddToRoleAsync(user, role);
             }
 
-            return await Result<string>.SuccessAsync($"User created successfully!");
+            return await Result<string>.SuccessAsync($"Пользователь успешно создан!");
         }
         public async Task<Result<LoginResponse>> Login(LoginRequest request)
         {
@@ -75,29 +77,17 @@ namespace CBSMonitoring.Services
                 .Include(u => u.Organization)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName);
 
-            if (user == null)
-                return await Result<LoginResponse>.FailAsync($"Invalid username");
-            if (!await _userManager.CheckPasswordAsync(user, request.Password))
-                return await Result<LoginResponse>.FailAsync($"Invalid password");
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var authClaims = new List<Claim>
+            if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
             {
-               new Claim(ClaimTypes.Name, user.UserName!),
-               new Claim(CustomClaimTypes.OrganizationId, user.OrganizationId.ToString()),
-               new Claim(CustomClaimTypes.OrganizationName, user.Organization.FullName), 
-               new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var authClaims = GetAuthClaims(user, userRoles);
+                string token = GenerateToken(authClaims);
+                var responseData = new LoginResponse(token, user.UserName!, userRoles, user.IsFirstLogin);
 
-            foreach (var userRole in userRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole)) ;
+                return await Result<LoginResponse>.SuccessAsync(responseData, "Успешно");
             }
-            string token = GenerateToken(authClaims);
 
-            var responseData = new LoginResponse(token, user.UserName!, userRoles);
-
-            return await Result<LoginResponse>.SuccessAsync(responseData, "Success!");
+            return await Result<LoginResponse>.FailAsync($"Неверный ввод");
         }
 
         public async Task<Result<UpdatePasswordResponse>> UpdatePassword(UpdatePasswordRequest request)
@@ -105,7 +95,7 @@ namespace CBSMonitoring.Services
             var userResult = await _applicationUserService.GetCurrentUser();
             if (!userResult.Succeeded)
             {
-                return await Result<UpdatePasswordResponse>.FailAsync($"{userResult.Messages}");
+                return await Result<UpdatePasswordResponse>.FailAsync(userResult.Messages);
             }
 
             var flag1 = await _userManager.CheckPasswordAsync(userResult.Data, request.OldPassword);
@@ -134,6 +124,9 @@ namespace CBSMonitoring.Services
                     PasswordUpdateMessage.PasswordUpdateFailed));
             }
 
+            userResult.Data.IsFirstLogin = false;
+            await _userManager.UpdateAsync(userResult.Data);
+
             return await Result<UpdatePasswordResponse>.SuccessAsync(
                 new UpdatePasswordResponse(PasswordUpdate.PasswordUpdateSucceded,
                 PasswordUpdateMessage.PasswordUpdateSuccceded));
@@ -156,6 +149,25 @@ namespace CBSMonitoring.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private static List<Claim> GetAuthClaims(ApplicationUser user, IList<string> userRoles)
+        {
+            var authClaims = new List<Claim>
+                {
+                   new Claim(ClaimTypes.Name, user.UserName!),
+                   new Claim(CustomClaimTypes.OrganizationId, user.OrganizationId.ToString()),
+                   new Claim(CustomClaimTypes.OrganizationName, user.Organization.FullName),
+                   new Claim(CustomClaimTypes.IsFirstLogin, user.IsFirstLogin.ToString()),
+                   new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            return authClaims;
         }
 
         #endregion

@@ -10,10 +10,10 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = UserRoles.Admin)]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class FormItemTypesController : ControllerBase
     {
         private readonly IGenericRepository _genericRepository;

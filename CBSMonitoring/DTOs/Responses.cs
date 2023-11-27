@@ -32,7 +32,7 @@ namespace CBSMonitoring.DTOs
 
             public ReportResponse() { }
         }
-        public record LoginResponse(string Token, string UserName, IList<string> UserRoles);
+        public record LoginResponse(string? Token, string? UserName, IList<string>? UserRoles, bool IsFirstLogin);
         public record AuthResponse(string UserName, string Email, string Token);
         public record RegistrationResponse(string UserName, string Email, string Password);
         public record FormItemResponse(int ItemId, string ItemLabel, string LabelInDisplay, string ItemName, bool IsMain, bool IsActive, bool IsRequired, string ItemTypeName,

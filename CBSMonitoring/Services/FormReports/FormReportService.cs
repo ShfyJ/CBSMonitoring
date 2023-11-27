@@ -131,6 +131,9 @@ namespace CBSMonitoring.Services.FormReports
 
                 var result = await GetFilledEntity(report, new DocInfo(reportForm.DocNumber,reportForm.DocDate), fileItems);
 
+                if (!result.Succeeded)
+                    return await Result<string>.FailAsync(result.Messages);
+
                 var entity = await _genericRepository.GetFirstByParameterAsync<T>(e => e.SectionNumber == sectionNumber
                                                         && e.Year == report.Year && e.QuarterIndex == report.QuarterIndex
                                                         && e.OrganizationId == report.OrganizationId);
@@ -150,28 +153,28 @@ namespace CBSMonitoring.Services.FormReports
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<string>> DeleteMonitoringReport<T>(int id)
             where T : OrgMonitoring
         {
             var report = await _genericRepository.GetByIdAsync<T>(id);
             if (report == null)
-                return await Result<string>.FailAsync($"Report with id={id} not found!");
+                return await Result<string>.FailAsync($"Отчет с id={id} не найден!");
             try
             {
                 await _genericRepository.DeleteAsync(report);
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
 
         }
         public async Task<Result<string>> EditMonitoringReport<T>(MonitoringDto reportForm, int id)
@@ -180,7 +183,7 @@ namespace CBSMonitoring.Services.FormReports
             var report = await _genericRepository.GetByIdAsync<T>(id);
 
             if (report == null)
-                return await Result<string>.FailAsync($"Report with id={id} not found");
+                return await Result<string>.FailAsync($"Отчет с id={id} не найден!");
 
             _mapper.Map(reportForm, report);
 
@@ -191,10 +194,10 @@ namespace CBSMonitoring.Services.FormReports
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
 
         }
         public async Task<Result<object>> GetQuarterReport<T, TDto>(ReportRequest reportRequest)
@@ -253,15 +256,15 @@ namespace CBSMonitoring.Services.FormReports
             };
 
             if (report == null)
-                return await Result<object>.FailAsync($"Current quarter report with section number = {reportRequest.SectionNumber} " +
-                                                        $"and organization Id = {reportRequest.OrganizationId} not found!");
+                return await Result<object>.FailAsync($"Текущий квартальный отчет с номером раздела = {reportRequest.SectionNumber} " +
+                                                        $"и идентификатор организации = {reportRequest.OrganizationId} не найден!");
             // Map report object into dto object
             var monitoringDto = _mapper.Map<TDto>(report);
 
             var sectionNumber = monitoringDto.GetType().GetProperty(nameof(BaseFormDto.SectionNumber))!.GetValue(monitoringDto)!.ToString();
             var section = await _genericRepository.GetFirstByParameterAsync<FormSection>(e => e.SectionNumber == sectionNumber);
             if (section == null)
-                return await Result<object>.FailAsync($"Section with id={sectionNumber} not found!");
+                return await Result<object>.FailAsync($"Раздел с id={sectionNumber} не найден!");
 
             // Fetch form items connected to this section
             var items = await _genericRepository.GetAllAsync<FormItem>(e => e.FormSectionId == section.SectionId, 
@@ -276,7 +279,7 @@ namespace CBSMonitoring.Services.FormReports
         {
             var sections = await GetSectionsByQbId(reportRequest.QbId);
             if (!sections.Any())
-                return await Result<object>.FailAsync($"No sections connected to question block with id ={reportRequest.QbId} found!");
+                return await Result<object>.FailAsync($"Разделов, связанных с блоком вопросов с идентификатором ={reportRequest.QbId}, не найдено!");
 
             // Get current user's organization id or check if user is authorized for this organization info
             var orgIdResult = await GetOrganizationId(reportRequest.OrganizationId);
@@ -291,9 +294,12 @@ namespace CBSMonitoring.Services.FormReports
 
             var organizations = await GetOrganizations(reportRequest.OrganizationId);
 
-            var finalResponses = await BuildFinalResponses(organizations, sections, reportRequest);
+            var finalResponsesResult = await BuildFinalResponses(organizations, sections, reportRequest);
 
-            return await Result<object>.SuccessAsync(finalResponses);
+            if (!finalResponsesResult.Succeeded)
+                return await Result<object>.FailAsync(finalResponsesResult.Messages);
+
+            return await Result<object>.SuccessAsync(finalResponsesResult.Data) ;
 
         }
 
@@ -301,12 +307,20 @@ namespace CBSMonitoring.Services.FormReports
         private async Task<Result<OrgMonitoring>> GetFilledEntity<T>(T report, DocInfo docInfo, IFormCollection? fileItems = null)
         where T : OrgMonitoring
         {
-            var Organization = await _genericRepository.GetByIdAsync<Organization>(report.OrganizationId) 
-                               ?? throw new NullReferenceException($"with id={report.OrganizationId} organization not found!");
+            var Organization = await _genericRepository.GetByIdAsync<Organization>(report.OrganizationId);
+            if(Organization == null)
+            {
+                return await Result<OrgMonitoring>.FailAsync($"С id={report.OrganizationId} организация не найдена!");
+            }
             
             OrgMonitoringDto Dto = new(Organization.FullName, report.Year, report.QuarterIndex, report.SectionNumber);
 
             var fileModels = await ProcessMultipleFiles(fileItems, Dto, docInfo);
+
+            if (!fileModels.Succeeded)
+            {
+                return await Result<OrgMonitoring>.FailAsync(fileModels.Messages);
+            }
 
             // Assign values to navigation properties of the forms 
             // For the navigation propertyless forms, just return report itself
@@ -322,32 +336,32 @@ namespace CBSMonitoring.Services.FormReports
                     case Form2_2_1:
                     case Form2_3_1:
                     case Form2_3_2:
-                        if (fileModels.Count == 0)
-                            throw new NotSupportedException($"No files received!");
-                        SetFileModelProperty(report, fileModels.First());
+                        if (fileModels.Data.Count == 0)
+                            throw new NotSupportedException($"Файлы не получены!");
+                        SetFileModelProperty(report, fileModels.Data.First());
                         break;
 
                     case Form2_2_2:
-                        if (fileModels.Count == 0)
-                            throw new NotSupportedException($"No files received!");
+                        if (fileModels.Data.Count == 0)
+                            throw new NotSupportedException($"Файлы не получены!");
                     PropertyInfo relatedFiles = report.GetType().GetProperty(nameof(Form2_2_2.FileModels))!;
                         relatedFiles.SetValue(report, fileModels);
                         break;
 
                     case Form2_8_1:
-                        if (fileModels.Count == 0)
-                            throw new NotSupportedException($"No files received!");
-                    SetPropertyForForm2_8_1(report, fileModels);
+                        if (fileModels.Data.Count == 0)
+                            throw new NotSupportedException($"Файлы не получены!");
+                    SetPropertyForForm2_8_1(report, fileModels.Data);
                         break;
                 }
 
             return await Result<OrgMonitoring>.SuccessAsync(report);
         }
-        private async Task<List<FileModel>> ProcessMultipleFiles(IFormCollection? fileItems, OrgMonitoringDto dto, DocInfo docInfo)
+        private async Task<Result<List<FileModel>>> ProcessMultipleFiles(IFormCollection? fileItems, OrgMonitoringDto dto, DocInfo docInfo)
         {
             if (fileItems is null)
             {
-                throw new NotSupportedException($"No files received.");
+                return await Result<List<FileModel>>.FailAsync($"Файлы не получены.");
             }
 
             List<FileModel> fileModels = new();
@@ -360,7 +374,7 @@ namespace CBSMonitoring.Services.FormReports
                 fileModels.Add(result.Data);
             }
 
-            return fileModels;
+            return await Result<List<FileModel>>.SuccessAsync(fileModels);
         }
         private async Task ReplaceExistingEntityWithNewOne<T>(OrgMonitoring newEntity, T entity)
             where T : OrgMonitoring
@@ -484,29 +498,19 @@ namespace CBSMonitoring.Services.FormReports
 
             
         }
-        private async Task<object> GetReportDto(ReportRequest reportRequest, object? blockDto)
+        private async Task<object> FetchAndMap<TEntity, TDto>(ReportRequest reportRequest, object? blockDto)
+             where TEntity : OrgMonitoring, new()
+             where TDto : class, new()
         {
-           
-            if(!_formTypeHandlers.ContainsKey(reportRequest.SectionNumber))
-            {
-                throw new NotSupportedException($"Section number with <{reportRequest.SectionNumber}> not found!");
-            }
-
-            return await _formTypeHandlers[reportRequest.SectionNumber](reportRequest, blockDto);
+            var predicate = BuildPredicate<TEntity>(reportRequest);
+            return await FetchAndMapData<TEntity, TDto>(predicate, blockDto);
         }
         private static Expression<Func<T, bool>> BuildPredicate<T>(ReportRequest reportRequest) where T : OrgMonitoring
         {
             return entity => entity.Year == reportRequest.Period.Year &&
                              entity.QuarterIndex == reportRequest.Period.Quarter &&
                              entity.OrganizationId == reportRequest.OrganizationId;
-        }
-        private async Task<object> FetchAndMap<TEntity, TDto>(ReportRequest reportRequest, object? blockDto)
-            where TEntity : OrgMonitoring, new()
-            where TDto : class, new()
-        {
-            var predicate = BuildPredicate<TEntity>(reportRequest);
-            return await FetchAndMapData<TEntity, TDto>(predicate, blockDto);
-        }
+        }        
         private async Task<TDto> FetchAndMapData<TEntity, TDto>(Expression<Func<TEntity, bool>> predicate, object? blockDto)
 
             where TEntity : OrgMonitoring, new()
@@ -531,7 +535,7 @@ namespace CBSMonitoring.Services.FormReports
             var organization = await _genericRepository.GetByIdAsync<Organization>(organizationId);
             return organization != null ? new List<Organization> { organization } : Enumerable.Empty<Organization>();
         }
-        private async Task<List<List<ReportResponse>>> BuildFinalResponses(IEnumerable<Organization> organizations, IEnumerable<FormSection> sections, ReportRequestByQb reportRequest)
+        private async Task<Result<List<List<ReportResponse>>>> BuildFinalResponses(IEnumerable<Organization> organizations, IEnumerable<FormSection> sections, ReportRequestByQb reportRequest)
         {
             List<List<ReportResponse>> finalResponseList = new();
 
@@ -548,6 +552,12 @@ namespace CBSMonitoring.Services.FormReports
                 foreach (var section in sections)
                 {
                     var report = await GetReportDto(new ReportRequest(section.SectionNumber, org.OrganizationId, reportRequest.Period.Year, reportRequest.Period.Quarter), blockDto);
+
+                    if (!report.Succeeded)
+                    {
+                        return await Result<List<List<ReportResponse>>>.FailAsync(report.Messages);
+                    }
+
                     blockDto = report;
 
                     var items = await _genericRepository.GetAllAsync<FormItem>(
@@ -563,7 +573,17 @@ namespace CBSMonitoring.Services.FormReports
                 finalResponseList.Add(responseList);
             }
 
-            return finalResponseList;
+            return await Result<List<List<ReportResponse>>>.SuccessAsync(finalResponseList);
+        }
+        private async Task<Result<object>> GetReportDto(ReportRequest reportRequest, object? blockDto)
+        {
+
+            if (!_formTypeHandlers.ContainsKey(reportRequest.SectionNumber))
+            {
+                return await Result<object>.FailAsync($"Номер раздела с <{reportRequest.SectionNumber}> не найден!");
+            }
+
+            return await Result<object>.SuccessAsync(_formTypeHandlers[reportRequest.SectionNumber](reportRequest, blockDto));
         }
         private static void SetFileModelProperty(object targetReport, object value)
         {
@@ -634,11 +654,11 @@ namespace CBSMonitoring.Services.FormReports
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
                 if (!isUserAuthorizedResult.Succeeded)
-                    return await Result<int>.FailAsync(String.Join(",", isUserAuthorizedResult.Messages));
+                    return await Result<int>.FailAsync(isUserAuthorizedResult.Messages);
                 if (!isUserAuthorizedResult.Data)
                     return await Result<int>.FailAsync(
                         HttpStatusCode.Unauthorized,
-                        new List<string> { $"you are not authorized to get info of organization with id = {organizationId}" });
+                        new List<string> { $"У вас нет прав на получение информации об организации с идентификатором = {organizationId}" });
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
@@ -647,12 +667,12 @@ namespace CBSMonitoring.Services.FormReports
 
             if (!claimResult.Succeeded)
             {
-                return await Result<int>.FailAsync(String.Join(",", claimResult.Messages));
+                return await Result<int>.FailAsync(claimResult.Messages);
             }
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
             if (organizationId == 0)
-                return await Result<int>.FailAsync($"Wrong Organizaiton Id : {claimResult.Data}");
+                return await Result<int>.FailAsync($"Неправильный идентификатор организации : {claimResult.Data}");
 
             return await Result<int>.SuccessAsync(organizationId);
         }

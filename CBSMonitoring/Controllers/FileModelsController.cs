@@ -7,7 +7,7 @@ namespace CBSMonitoring.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class FileModelsController : ControllerBase
     {
         private readonly IFileWorkRoom _fileWorkRoom;
@@ -22,7 +22,7 @@ namespace CBSMonitoring.Controllers
             var result = await _fileWorkRoom.GetFileAsStream(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
 
             return File(result.Data.Memory, result.Data.ContentType, result.Data.FileName);
         }

@@ -24,7 +24,7 @@ namespace CBSMonitoring.Models
 
             if (file is null)
             {
-                return await Result<FileToStream>.FailAsync($"File entity is not found in the database");
+                return await Result<FileToStream>.FailAsync($"Объект файла не найден в базе данных");
             }
 
             if (File.Exists(file.FilePath))
@@ -48,7 +48,7 @@ namespace CBSMonitoring.Models
 
             else
             {
-                return await Result<FileToStream>.FailAsync($"File is not found in the file system");
+                return await Result<FileToStream>.FailAsync($"Файл не найден в файловой системе");
             }
         }
 
@@ -108,7 +108,7 @@ namespace CBSMonitoring.Models
 
             catch (Exception ex)
             {
-                return await Result<FileModel>.FailAsync($"Failed - {ex.Message}");
+                return await Result<FileModel>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
             //if (fileType.Equals(EDocFileTypeConst.MainDocument))

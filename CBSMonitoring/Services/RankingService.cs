@@ -36,7 +36,8 @@ namespace CBSMonitoring.Services
         {
             try
             {
-                if (ValidateScore(evaluationRequest.BlockNumber, evaluationRequest.Score).Result)
+                var validationResult = await ValidateScore(evaluationRequest.BlockNumber, evaluationRequest.Score);
+                if (validationResult.Item1)
                 {
                     var evaluation = _mapper.Map<Evaluation>(evaluationRequest);
                     evaluation.EvaluatedTime = DateTime.Now;
@@ -60,22 +61,22 @@ namespace CBSMonitoring.Services
                 }
 
                 else
-                    return await Result<string>.FailAsync($"Assigned Score is higher than maximum point!");
+                    return await Result<string>.FailAsync($"{validationResult.Item2}");
 
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<ScoreResponse>> GetEvaluationOfIndicator(ScoreRequestByIndicator scoreRequest)
         {
             // Validate request
             if (!ValidateScoreRequest(scoreRequest, 1).Result)
             {
-                return await Result<ScoreResponse>.FailAsync($"Indicator => not found!");
+                return await Result<ScoreResponse>.FailAsync($"Индикатор => не найден!");
             }
 
             // Get current user's organization id or check if user is authorized for this organization info
@@ -96,15 +97,16 @@ namespace CBSMonitoring.Services
                     && e.OrganizationId == scoreRequest.OrganizationId);
 
             if (evaluation == null)
-                return await Result<ScoreResponse>.FailAsync($"Evaluation with parameters => {scoreRequest} not found!");
+                return await Result<ScoreResponse>.FailAsync($"Оценка с параметрами => {scoreRequest} не найдена!");
 
             try
             {
                 return await Result<ScoreResponse>.SuccessAsync(_mapper.Map<ScoreResponse>(evaluation));
             }
+
             catch (Exception ex)
             {
-                return await Result<ScoreResponse>.FailAsync(ex.Message);
+                return await Result<ScoreResponse>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
         }
@@ -113,7 +115,7 @@ namespace CBSMonitoring.Services
             // Validate request
             if (!ValidateScoreRequest(scoreRequest, 1).Result)
             {
-                return await Result<IEnumerable<ScoreResponse>>.FailAsync($"Indicator => not found!");
+                return await Result<IEnumerable<ScoreResponse>>.FailAsync($"Индикатор => не найден!");
             }
 
             // Get all the rankings for the given criteria
@@ -218,7 +220,7 @@ namespace CBSMonitoring.Services
             // Validate request
             if (!ValidateScoreRequest(scoreRequest,2).Result)
             {
-                return await Result<IEnumerable<ScoreResponse>>.FailAsync($"Organization => not found!");
+                return await Result<IEnumerable<ScoreResponse>>.FailAsync($"Организация не найдена!");
             }
 
             // Get current user's organization id or check if user is authorized for this organization info
@@ -272,24 +274,24 @@ namespace CBSMonitoring.Services
         {
             var evaluation = await _rankingRepository.GetByIdAsync<Evaluation>(reEvaluationRequest.EvaluationId);
             if (evaluation == null)
-                return await Result<string>.FailAsync($"Evaluation with id={reEvaluationRequest.EvaluationId} not found");
+                return await Result<string>.FailAsync($"Оценка с id={reEvaluationRequest.EvaluationId} не найдена");
             try
             {
                 await _rankingRepository.UpdateAsync(_mapper.Map(reEvaluationRequest, evaluation));
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<string>> RemoveEvaluation(int id)
         {
             var evaluation = await _rankingRepository.GetByIdAsync<Evaluation>(id);
 
             if (evaluation == null)
-                return await Result<string>.FailAsync($"Evaluation with id={id} not found!");
+                return await Result<string>.FailAsync($"Оценка с id={id} не найдена!");
 
             try
             {
@@ -297,10 +299,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync(ex.Message);
+                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
             }
 
-            return await Result<string>.SuccessAsync($"Success");
+            return await Result<string>.SuccessAsync($"Успешно!");
         }
         public async Task<Result<ScoreStatsReponse>> GetStatisticsForPeriod(int periodOfQuarters, int organizationId = 0) // for the last x quarters
         {
@@ -392,15 +394,16 @@ namespace CBSMonitoring.Services
         }
        
         #region private methods
-        private async Task<bool> ValidateScore(string indicator, double score)
+        private async Task<(bool, string)> ValidateScore(string indicator, double score)
         {
-            var questionBlock = await _rankingRepository.GetFirstByParameterAsync<QuestionBlock>(e => e.BlockNumber == indicator)
-                ?? throw new NotSupportedException($"Question block with number={indicator} not found!");
+            var questionBlock = await _rankingRepository.GetFirstByParameterAsync<QuestionBlock>(e => e.BlockNumber == indicator);
+            if(questionBlock is null)
+                return (false, $"Блок вопросов с номером={indicator} не найден!");
 
             if (score > questionBlock.MaxScore)
-                return false;
+                return (false, "Присвоенный балл превышает максимальный балл!");
 
-            return true;
+            return (true,"");
         }
         private async Task<bool> ValidateScoreRequest(ScoreRequest scoreRequest, int type)
             => type switch
@@ -417,11 +420,11 @@ namespace CBSMonitoring.Services
                 var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
 
                 if (!isUserAuthorizedResult.Succeeded)
-                    return await Result<int>.FailAsync(String.Join(",", isUserAuthorizedResult.Messages));
+                    return await Result<int>.FailAsync(isUserAuthorizedResult.Messages);
                 if (!isUserAuthorizedResult.Data)
                     return await Result<int>.FailAsync(
                         HttpStatusCode.Unauthorized, 
-                        new List<string> {$"you are not authorized to get info of organization with id = {organizationId}"});
+                        new List<string> {$"У вас нет прав на получение информации об организации с идентификатором = {organizationId}" });
 
                 return await Result<int>.SuccessAsync(organizationId);
             }
@@ -429,12 +432,12 @@ namespace CBSMonitoring.Services
 
             if (!claimResult.Succeeded)
             {
-                return await Result<int>.FailAsync(String.Join(",", claimResult.Messages));
+                return await Result<int>.FailAsync(claimResult.Messages);
             }
 
             organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
             if (organizationId == 0)
-                return await Result<int>.FailAsync($"Wrong Organizaiton Id : {claimResult.Data}");
+                return await Result<int>.FailAsync($"Неправильный идентификатор организации: : {claimResult.Data}");
 
             return await Result<int>.SuccessAsync(organizationId);
         }

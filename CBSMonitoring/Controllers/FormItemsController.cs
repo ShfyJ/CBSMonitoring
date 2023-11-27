@@ -8,10 +8,9 @@ using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class FormItemsController : ControllerBase
     {
         private readonly IFormItemService _formItemService;
@@ -27,7 +26,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -42,7 +41,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -60,7 +59,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -77,7 +76,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _formItemService.EditFormItem(item, id);
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             return Ok(result);
         }
 
@@ -89,7 +88,7 @@ namespace CBSMonitoring.Controllers
             var result = await _formItemService.DeleteFormItem(id);
 
             if (!result.Succeeded)
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             return Ok(result);
         }
     }

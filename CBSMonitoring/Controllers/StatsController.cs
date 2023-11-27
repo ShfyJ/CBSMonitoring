@@ -8,7 +8,7 @@ namespace CBSMonitoring.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequirePasswordChange")]
     public class StatsController : ControllerBase
     {
         private readonly IRankingService _rankingService;
@@ -28,9 +28,9 @@ namespace CBSMonitoring.Controllers
             if (!result.Succeeded)
             {
                 if (result.Code == System.Net.HttpStatusCode.Unauthorized)
-                    return Unauthorized(result.Messages);
+                    return Unauthorized(result);
                 
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -43,7 +43,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -56,7 +56,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -69,7 +69,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
@@ -82,7 +82,7 @@ namespace CBSMonitoring.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Messages);
+                return BadRequest(result);
             }
 
             return Ok(result);
