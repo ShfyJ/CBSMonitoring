@@ -4,6 +4,8 @@ using CBSMonitoring.Models.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using static CBSMonitoring.DTOs.Responses;
+using System.Reflection.Emit;
 
 namespace CBSMonitoring.Data
 {
@@ -26,6 +28,8 @@ namespace CBSMonitoring.Data
         public DbSet<MonitoringIndicator> MonitoringIndicators { get; set; }
         public DbSet<Evaluation> Evaluations { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
 
         #region Form Sections
         public DbSet<Form1_1_1> Form1_1_1s { get; set; }   //1.1
@@ -103,6 +107,26 @@ namespace CBSMonitoring.Data
             builder.Entity<IdentityUserLogin<string>>().ToTable("cbs_userLogins");
             builder.Entity<IdentityUserToken<string>>().ToTable("cbs_userTokens");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("cbs_userRoleClaims");
+
+            #region Messages relationships
+            builder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany() // Optionally define navigation property in User if needed
+                .HasForeignKey(m => m.SenderId);
+
+            builder.Entity<MessageRecipient>()
+                .HasKey(mr => new { mr.MessageId, mr.UserId });
+
+            builder.Entity<MessageRecipient>()
+                .HasOne(mr => mr.Message)
+                .WithMany(m => m.MessageRecipients)
+                .HasForeignKey(mr => mr.MessageId);
+
+            builder.Entity<MessageRecipient>()
+                .HasOne(mr => mr.Recipient)
+                .WithMany(u => u.MessageRecipients)
+                .HasForeignKey(mr => mr.UserId);
+            #endregion
 
             builder.Entity<Setting>()
                 .HasDiscriminator<string>("Setting")
@@ -190,6 +214,7 @@ namespace CBSMonitoring.Data
                 .HasOne(a => a.FileModel)
                 .WithOne()
                 .HasForeignKey<Form2_3_2>(a => a.File_2_3_2Id);
+
         }
 
     }

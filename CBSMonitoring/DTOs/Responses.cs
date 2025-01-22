@@ -1,11 +1,30 @@
 ﻿using CBSMonitoring.Model;
 using CBSMonitoring.Webframework;
+using System.ComponentModel.DataAnnotations;
 
 namespace CBSMonitoring.DTOs
 {
     public class Responses
     {
-        public record User(string? UserName, string? Email, bool IsActive, IEnumerable<string> Roles, string? FullName, string OrganizationName, int OrganizationId, string Position, string? PhoneNumber);
+        public record User(string? UserId, string? UserName, string? Email, bool IsActive, IEnumerable<string> Roles, string? FullName, string OrganizationName, int OrganizationId, string Position, string? PhoneNumber);
+        public class Sender
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+
+            public Sender()
+            {
+                    
+            }
+        }
+        public class Reciever 
+        { 
+            public string Id {  set; get; }
+            public string Name { set; get; }
+            public bool IsRead { set; get; }
+            public Reciever() { }
+        
+        }
         public record UpdatePasswordResponse(Enum Flag, string Message);
         public class ReportResponse 
         {
@@ -32,9 +51,20 @@ namespace CBSMonitoring.DTOs
 
             public ReportResponse() { }
         }
-        public record LoginResponse(string? Token, string? UserName, IList<string>? UserRoles, bool IsFirstLogin);
-        public record AuthResponse(string UserName, string Email, string Token);
-        public record RegistrationResponse(string UserName, string Email, string Password);
+        //public record LoginResponse(string? Token, string? UserName, IList<string>? UserRoles, bool IsFirstLogin);
+        public record AuthResponse(string UserName, bool IsFirstLogin, bool Require2Fa, string? Token = null, IList<string>? UserRoles = null);
+        public class RegistrationResponse
+        {
+            #nullable disable
+            public string UserName { get; init; }
+            public string Email { get; init; }
+            public string FullName { get; init; }
+            public string OrganizationName { get; set; }
+            public List<string> Roles { get; init; }
+            #nullable enable
+            public string? Position { get; init; } = null;
+            public string? PhoneNumber { get; init; } = null;
+        }
         public record FormItemResponse(int ItemId, string ItemLabel, string LabelInDisplay, string ItemName, bool IsMain, bool IsActive, bool IsRequired, string ItemTypeName,
             int FormSectionId, int Order, string[]? SelectOptions = null, string? ListLabel = null, string? ListName = null, bool IsListItem = false, int? ListIndex = null);
 
@@ -167,7 +197,35 @@ namespace CBSMonitoring.DTOs
         }
         public record StatsForCertainCriteriaResponse(IEnumerable<string> Orgs, Period Period);
         public record StatsForReportCompletionResponse(int OrganizationId, string OrganizationName, IEnumerable<CompletionForPeriod> CompletionPercentages);
-        
-        
+
+        public class InboxMessage
+        {
+            public int Id { get; set; }
+            public Sender Sender { get; set; }
+            public string Content { get; set; }
+            public bool IsBroadcast { get; set; }
+            public DateTime TimeStamp { get; set; }
+            public bool IsRead { get; set; }
+            public InboxMessage()
+            {
+
+            }
+        }
+        //public  InboxMessage(int Id, Sender Sender, string Content, bool IsBroadcast, DateTime TimeStamp, bool IsRead = true);
+        public record SentMessage 
+        { 
+            public int Id { get; set; }
+            public string Content { get; set; }
+            public bool IsBroadcast { get; set; }
+            public DateTime TimeStamp { get; set; }
+            public List<Reciever> Recievers { get; set; }
+
+            public SentMessage()
+            {
+                
+            }
+
+        } //(int Id, string Content, bool IsBroadcast, DateTime TimeStamp, List<Reciever> Recievers);
+        public record CatalogResponse(int Id, string Name, string Description);
     }
 }

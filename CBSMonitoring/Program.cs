@@ -13,12 +13,33 @@ using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Extensions;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Integrations;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
+using CBSMonitoring.DTOs;
+using ERPBlazor.Shared.Wrappers;
+using CBSMonitoring.Hubs;
+using System.Security.Claims;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers().AddNewtonsoftJson().ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var validationErrors = context.ModelState
+            .SelectMany(kvp => kvp.Value.Errors.Select(error => new ValidationError(kvp.Key, error.ErrorMessage)))
+            .ToList(); 
+        
+        return new BadRequestObjectResult(new Result<string?>(StatusCodes.Status400BadRequest, null, validationErrors,
+            false, new List<string> { "Проверка: Один или несколько неверных входных данных!" }));
+    };
+}); 
+
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 builder.Services.AddDbContext<AppDbContext>(
         options =>
@@ -45,6 +66,9 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 //builder.Services.Configure<JsonConfig>(builder.Configuration.GetSection("JsonOptions"));
 //builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JsonConfig>>().Value.JsonSerializerSettings);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 builder.Services.AddJsonMultipartFormDataSupport(JsonSerializerChoice.Newtonsoft);
 
@@ -60,11 +84,14 @@ builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 //builder.Services.AddScoped<IMonitoringIndicatorService, MonitoringIndicatorService>();
 builder.Services.AddScoped<TokenService, TokenService>();
+builder.Services.AddScoped<EmailService>();
+
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<AuthorizeFirstLoginAttribute>();
-
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -95,6 +122,13 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+// Configure Serilog
+builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Configuration(hostingContext.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(hostingContext.Configuration["Serilog:LogFile"] ?? "logs/ib.ung.uz-.txt", rollingInterval: RollingInterval.Day));
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -103,6 +137,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
+        var jwtSettings = builder.Configuration.GetSection("JWT");
         options.SaveToken = true;
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters()
@@ -112,12 +147,34 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-            ValidAudience = builder.Configuration["JWT:ValidAudience"],
+            ValidIssuer = builder.Configuration["JWT:ValidIssuer"], //jwtSettings.GetSection("ValidIssuers").Get<string[]>(),
+            ValidAudience = builder.Configuration["JWT:ValidAudience"], //jwtSettings.GetSection("ValidAudiences").Get<string[]>(),
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]!)
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT:AccessKey"]!)
             ),
         };
+
+        // Configure WebSocket support
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for a websocket, the token comes from the query string.
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/chathub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+
+
     });
 
 builder.Services.AddAuthorization(options =>
@@ -126,15 +183,20 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("IsFirstLogin", "False"));
 });
 
+builder.Services.AddHostedService<BlacklistCleanupService>();
+
 builder.Services
     .AddCors(opt =>
     {
         opt.AddPolicy(name: "CorsPolicy", builder =>
         {
-            builder//WithOrigins("https://ib.ung.uz", "http://192.168.88.217")
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
+            builder.WithOrigins( "http://192.168.89.163", "https://ib.ung.uz", "http://192.168.88.118:3000", "http://localhost:3000",
+                "http://192.168.95.93:443","http://192.168.89.93", "http://localhost:4990")
+            //builder.AllowAnyOrigin()
+            .WithMethods("GET","POST")
             .AllowAnyHeader()
+            .AllowAnyMethod()          
+            .AllowCredentials()
             .WithExposedHeaders("Content-Disposition");
         });
     });
@@ -148,22 +210,32 @@ builder.Services
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.Use(async (context, next) =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    Console.WriteLine(context.Request.Method);
+    Console.WriteLine(context.Request.Headers);
+    await next.Invoke();
+});
 
-app.UseHttpsRedirection();
-app.UseCors("CorsPolicy");
-app.UseStaticFiles();
-app.UseAuthentication();
-app.UseAuthorization();
-
+// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 app.UseSwagger();
 app.UseSwaggerUI();
 
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors("CorsPolicy");
+app.UseAuthentication();
+app.UseMiddleware<TokenBlacklistMiddleware>(); // Check if the token is blacklisted.
+app.UseAuthorization();
+
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub").RequireCors("CorsPolicy");
 
 app.Run();

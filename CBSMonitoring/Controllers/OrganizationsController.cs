@@ -28,10 +28,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _organizationService.GetAllOrganizations();
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("GetAllWithShortInfo")]
@@ -40,27 +37,16 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _organizationService.GetAllOrganizationsInShort();
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // GET api/<OrganizationsController>/5
         [HttpGet("GetById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var chekingResult = await _applicationUserService.IsUserAuthorizedForThisInfo(id);
-
-            if(!chekingResult.Succeeded)
-                return Unauthorized(chekingResult);
-
             var result = await _organizationService.GetOrganizationById(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // POST api/<OrganizationsController>
@@ -70,28 +56,16 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _organizationService.AddOrganization(request);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // PUT api/<OrganizationsController>/5
         [HttpPut("UpdateOrgInfo/{id}")]
         public async Task<IActionResult> UpdateOrgInfo(int id, [FromBody] OrganizationRequest request)
         {
-
-            var chekingResult = await _applicationUserService.IsUserAuthorizedForThisInfo(id);
-
-            if (!chekingResult.Succeeded)
-                return Unauthorized(chekingResult);
-
             var result = await _organizationService.UpdateOrganizationInfo(request, id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // DELETE api/<OrganizationsController>/5
@@ -101,10 +75,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _organizationService.Delete(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
        

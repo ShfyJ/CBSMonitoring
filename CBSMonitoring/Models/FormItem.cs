@@ -8,6 +8,7 @@ namespace CBSMonitoring.Models
         [Key]
         public int ItemId { get; set; }
         public bool IsActive { get; set; }
+        [Required(ErrorMessage = "Это поле обязательно")]
         public bool IsMain { get; set; }
         public int Order { get; set; } = 0;
         public string[]? SelectOptions { get; set; } = null;
@@ -17,9 +18,13 @@ namespace CBSMonitoring.Models
         public string? ListName { get; set; }
         #nullable disable
         public bool IsRequired { get; set; } = true;
+        [Required(ErrorMessage = "Это поле обязательно")]
         public string ItemLabel { get; set; }
-        public string LabelInDisplay { get; set; }
+       // [Required(ErrorMessage = "Это поле обязательно")]
+        public string LabelInDisplay { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Это поле обязательно")]
         public string ItemName { get; set; }
+        [Required(ErrorMessage = "Это поле обязательно")]
         public int ItemTypeId { get; set; }
         [ForeignKey(nameof(ItemTypeId))]
         public FormItemType FormItemType { get; set; }

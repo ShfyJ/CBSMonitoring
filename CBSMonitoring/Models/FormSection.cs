@@ -9,12 +9,12 @@ namespace CBSMonitoring.Models
     {
         [Key]
         public int SectionId { get; set; }
-        [Required(ErrorMessage = "IsActive is must")]
+        [Required(ErrorMessage = "Это поле обязательно")]
         public bool IsActive { get; set; }
         #nullable disable
-        [Required(ErrorMessage = "SectionName is must")]
+        [Required(ErrorMessage = "Это поле обязательно")]
         public string SectionName { get; set; }
-        [Required(ErrorMessage = "SectionNumber is must")]
+        [Required(ErrorMessage = "Это поле обязательно")]
         public string SectionNumber { get; set; }
         public int QuestionBlockId { get; set; }
         [ForeignKey(nameof(QuestionBlockId))]

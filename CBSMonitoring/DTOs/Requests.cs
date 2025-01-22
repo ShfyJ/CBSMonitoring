@@ -8,20 +8,23 @@ namespace CBSMonitoring.DTOs
         public class RegistrationRequest 
         {
             #nullable disable
-            [Required(ErrorMessage = "User Name is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string UserName { get; init; }
-            [Required(ErrorMessage = "Email is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string Email { get; init; }
-            [Required(ErrorMessage = "Full Name is required")]
+            [MaxLength(50, ErrorMessage = "Длина полного имени должна быть менее 50 букв")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string FullName { get; init; }
-            [Required(ErrorMessage = "Organization is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
+            [Range(1, 100, ErrorMessage = "Неправильный идентификатор организации")]
             public int OrganizationId { get; init; }
-            [Required(ErrorMessage = "Password is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string Password { get; init; }
-            [Required(ErrorMessage = "Role is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public List<string> Roles { get; init; }
             #nullable enable
-            public string? Position { get; init; } = null;
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string? Position { get; init; }
             public string? PhoneNumber { get; init; } = null;
             
         }
@@ -29,7 +32,7 @@ namespace CBSMonitoring.DTOs
         public class UserSelfUpdateRequest
         {
             #nullable disable
-            [Required(ErrorMessage = "Full name is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string FullName { get; init; }
             #nullable enable
             public string? PhoneNumber { get; init; } = null;
@@ -38,10 +41,10 @@ namespace CBSMonitoring.DTOs
         public class UserUpdateRequest : UserSelfUpdateRequest
         {
             #nullable disable
-            [Required(ErrorMessage = "UserName is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public string UserName { get; init; }
 
-            [Required(ErrorMessage = "Organization is required")]
+            [Required(ErrorMessage = "Это поле обязательно")]
             public int OrganizationId { get; init; }
 
             #nullable enable
@@ -49,12 +52,18 @@ namespace CBSMonitoring.DTOs
             #nullable disable
         }
 
-        public record UpdatePasswordRequest(string OldPassword, string NewPassword);
+        public class UpdatePasswordRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string OldPassword { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string NewPassword { get; init; }
+        }
         public record ReportRequest
         {
             #nullable disable
             [Required]
-            public string SectionNumber { get; init; } 
+            public string SectionNumber { get; init; }
             public int OrganizationId { get; set; }
             public Period Period { get; init; }
 
@@ -71,16 +80,70 @@ namespace CBSMonitoring.DTOs
             public int QbId { get; init; }
             public int OrganizationId { get; set; } = 0;
             public Period Period { get; init; }
+            public ReportRequestByQb()
+            {
+                Period = new Period();
+            }
         }
-        public record FormItemRequest(string ItemLabel, string LabelInDisplay, string ItemName, bool IsMain, bool IsActive, int ItemTypeId,
-            int FormSectionId, int Order, bool IsRequired = true, string[] SelectOptions = null, 
-            bool IsListItem = false, int? ListIndex = null, string ListLabel = null);
-        public record FormItemTypeRequest(string TypeName, string TypeDescription, bool IsActive);
-        public record TimelyExecutionOfPlanRequest(string SectNameWithNumber, string Doers, DateTime DeadlineOfPlan, 
-            string Status, DateTime CompletionDate, string Comments = null);
+        public class FormItemRequest
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string ItemLabel { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string LabelInDisplay { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string ItemName { get; init; }
+            public bool IsMain { get; init; } = false;
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public int ItemTypeId { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public int FormSectionId { get; init; }
+            public int Order { get; init; }
+            public bool IsRequired { get; init; } = true;
+            public string[] SelectOptions { get; init; } = null;
+            public bool IsListItem { get; init; } = false;
+            public int? ListIndex { get; init; } = null;
+            public string ListLabel { get; init; } = null;
 
-        public record QualificationImprovedEmployeeRequest(string FullName, string Position, string CourseName,
-            string EducationPeriod, string CourseConductedOrgName);
+        }
+        public class FormItemTypeRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string TypeName { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string TypeDescription { get; init; }
+            public bool IsActive { get; init; } = true;
+        }
+        public class TimelyExecutionOfPlanRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string SectNameWithNumber { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string Doers { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            [DataType(DataType.Date, ErrorMessage = "Введена неверная дата")]
+            public DateTime DeadlineOfPlan { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string Status { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            [DataType(DataType.Date, ErrorMessage = "Введена неверная дата")]
+            public DateTime CompletionDate { get; init; }
+            public string Comments { get; init; } = null;
+        } 
+
+        public class QualificationImprovedEmployeeRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string FullName { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string Position { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string CourseName { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string EducationPeriod { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string CourseConductedOrgName { get; init; }
+        }
         public record LevelRequest
         {
             [Required]
@@ -89,21 +152,64 @@ namespace CBSMonitoring.DTOs
         }
         
         public record QuestionBlockRequest(string BlockNumber, string BlockName, bool IsActive, int Point);
-        public record FormSectionRequest(string SectionName, string SectionNumber, int QuestionBlockId, bool IsActive);
-        public record OrganizationRequest(string FullName, bool Status=true, string ShortName=null, string HeadFullName=null, string RegulatoryLegalAct=null,
-            string Address=null, string PhoneNumber=null, string Email=null, string Fax=null, string EXat=null, int NumberOfEmployees=0);
-        
-        public record EvaluationRequest(string BlockNumber, double Score, Period Period, int OrganizationId, string Comment = null);        
+        public record FormSectionRequest(string SectionName, /*string SectionNumber, int QuestionBlockId, */ bool IsActive);
+        public class OrganizationRequest
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string FullName { get; init; }
+            public bool Status { get; init; } = true;
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string ShortName { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string HeadFullName { get; init; }
+            public string RegulatoryLegalAct { get; init; } = null;
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string Address { get; init; }
+            public string PhoneNumber { get; init; } = null;
+            public string Email { get; init; } = null;
+            public string Fax { get; init; } = null;
+            public string EXat { get; init; } = null;
+            public int NumberOfEmployees { get; init; } = 0;
+        }
+
+        public class EvaluationRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string BlockNumber { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            [Range(0.0, Double.MaxValue, ErrorMessage = "Оценка должна быть больше {1}.")]
+            public double Score { get; init; }
+            public Period Period { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public int OrganizationId { get; init; }
+            public string Comment { get; init; } = null;
+        }     
         public class ScoreRequest
         {
             public Period Period { get; init; }
-            public int OrganizationId { get; set; }
+            public int OrganizationId { get; set; } = 0;
         }
         public class ScoreRequestByIndicator : ScoreRequest
         {
             public string BlockNumber { get; init; }
         }
 
-        public record ReEvaluationRequest(int EvaluationId, double Score, string Comment);
+        public class ReEvaluationRequest 
+        {
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public int EvaluationId { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            [Range(0.0, Double.MaxValue, ErrorMessage = "Оценка должна быть больше {1}.")]
+            public double Score { get; init; }
+            [Required(ErrorMessage = "Это поле обязательно")]
+            public string Comment { get; init;}
+        }
+
+        public record MessageRequest(string SenderId,string Header, string Content, List<string> ReceiverIds=null);
+        public record DeleteMsgRequest(int MessageId, string UserId, bool IsSender);
+        public record CatalogFile(string Description, IFormFile File);
+        public record MessageReadRequest (int MessageId, string UserId);
+        public record OtpVerificationRequest(string Username, string OTP, string TempToken);
+        public record SendOtpRequest(string Username, string TempToken);
     }
 }

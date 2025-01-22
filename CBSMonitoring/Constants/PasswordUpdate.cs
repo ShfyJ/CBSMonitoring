@@ -11,10 +11,10 @@
 
     public static class PasswordUpdateMessage
     {
-        public const string OldPasswordNotConfirmed = "Old password is not confirmed";
-        public const string NewAndOldPasswordIdentical = "New and old passwords are identical";
-        public const string NewPasswordTooWeak = "New password is too weak";
-        public const string PasswordUpdateSuccceded = "Password is updateed successfully";
-        public const string PasswordUpdateFailed = "Password update failed";
+        public const string OldPasswordNotConfirmed = "Старый пароль не подтвержден";
+        public const string NewAndOldPasswordIdentical = "Новый и старый пароли идентичны";
+        public const string NewPasswordTooWeak = "Новый пароль слишком слабый";
+        public const string PasswordUpdateSuccceded = "Пароль успешно обновлен";
+        public const string PasswordUpdateFailed = "Обновление пароля не удалось";
     }
 }

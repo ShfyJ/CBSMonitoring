@@ -27,10 +27,10 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
 
         }
 
@@ -40,7 +40,7 @@ namespace CBSMonitoring.Services
 
             if (item == null)
             {
-                return await Result<string>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
+                return await Result<string>.FailAsync(StatusCodes.Status404NotFound, $"Неуспешно: элемент формы с id={id} не найден!");
             }
 
             try
@@ -49,10 +49,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
 
         }
 
@@ -63,7 +63,7 @@ namespace CBSMonitoring.Services
 
             if (itemToUpdate == null)
             {
-                return await Result<string>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
+                return await Result<string>.FailAsync(StatusCodes.Status404NotFound, $"Неуспешно: элемент формы с id={id} не найден!");
             }
 
             _mapper.Map(item, itemToUpdate);
@@ -74,10 +74,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
         }
 
         public async Task<Result<FormItemResponse>> GetFormItem(int id)
@@ -85,9 +85,9 @@ namespace CBSMonitoring.Services
             var item = await _genericRepository.GetByIdAsync<FormItem>(id);
 
             if (item == null)
-                return await Result<FormItemResponse>.FailAsync($"Неуспешно: элемент формы с id={id} не найден!");
+                return await Result<FormItemResponse>.FailAsync(StatusCodes.Status404NotFound, $"Неуспешно: элемент формы с id={id} не найден!");
 
-            return await Result<FormItemResponse>.SuccessAsync(_mapper.Map<FormItemResponse>(item));
+            return await Result<FormItemResponse>.SuccessAsync(StatusCodes.Status200OK, _mapper.Map<FormItemResponse>(item));
         }
 
         public async Task<Result<IEnumerable<FormItemResponse>>> GetFormItemsByFormSectionId(int formSectionId)
@@ -109,11 +109,11 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<FormItemResponse>>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<IEnumerable<FormItemResponse>>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
 
-            return await Result<IEnumerable<FormItemResponse>>.SuccessAsync(result);
+            return await Result<IEnumerable<FormItemResponse>>.SuccessAsync(StatusCodes.Status200OK, result);
         }
     }
 }

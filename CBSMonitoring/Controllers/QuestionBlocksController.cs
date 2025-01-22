@@ -27,12 +27,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _qbService.GetQuestionBlock(id);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("CreateQuestionBlock")]
@@ -46,10 +41,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _qbService.AddQuestionBlock(qb);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("GetQuestionBlocks")]
@@ -57,12 +49,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _qbService.GetQuestionBlocksWithIndicators(request);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("GetRawQuestionBlocks")]
@@ -70,12 +57,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _qbService.GetRawQuestionBlocksWithIndicators();
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("UpdateQuestionBlock/{id}")]
@@ -89,10 +71,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _qbService.UpdateQuestionBlock(qb, id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-            else
-                return Ok(result);
+            return StatusCode(result.StatusCode, result);
 
         }
 
@@ -102,13 +81,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _qbService.RemoveQuestionBlock(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            else
-            {
-                return Ok(result);
-            }
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

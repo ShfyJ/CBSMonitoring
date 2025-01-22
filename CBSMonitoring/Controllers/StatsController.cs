@@ -25,15 +25,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.GetStatisticsForPeriod(periodOfQuarters, organizationId);
 
-            if (!result.Succeeded)
-            {
-                if (result.Code == System.Net.HttpStatusCode.Unauthorized)
-                    return Unauthorized(result);
-                
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("GetAllInOneStatsForPeriod")]
@@ -41,12 +33,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.GetAllInOneStatiscticsForPeriod(periodOfQuarters);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("GetStatsForCriteria")]
@@ -54,12 +41,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.GetStatsForCriteria(percentageCriteria, periodOfQuarters);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("GetStatsOfCompletionForPeriod")]
@@ -67,12 +49,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _questionBlockService.GetStatsForReportCompletion(periodOfQuarters, organizationId);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("GetOverallStatsOfCompletionForPeriod")]
@@ -80,12 +57,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _questionBlockService.GetAllInOneStatsForReportCompletion(periodOfQuarters);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

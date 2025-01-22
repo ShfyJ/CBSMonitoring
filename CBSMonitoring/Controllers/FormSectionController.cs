@@ -27,12 +27,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _fsService.GetFormSectionById(id);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // GET api/<FormSectionController>/5
@@ -41,17 +36,13 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _fsService.GetAllFormSectionsByQuestionBlockId(id, request);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // POST api/<FormSectionController>
         [HttpPost("CreateFormSection")]
         [Authorize(Roles = UserRoles.Admin)]
+        [NonAction]
         public async Task<IActionResult> CreateFormSection([FromForm] FormSectionRequest fs)
         {
             if (!ModelState.IsValid)
@@ -64,12 +55,7 @@ namespace CBSMonitoring.Controllers
             }
 
             var result = await _fsService.AddFormSection(fs);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // PUT api/<FormSectionController>/5
@@ -84,25 +70,18 @@ namespace CBSMonitoring.Controllers
 
             var result = await _fsService.EditFormSection(fs, id);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // DELETE api/<FormSectionController>/5
         [HttpDelete("DeleteFormSection/{id}")]
         [Authorize(Roles = UserRoles.Admin)]
+        [NonAction]
         public async Task<IActionResult> DeleteFormSection(int id)
         {
             var result = await _fsService.DeleteFormSection(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

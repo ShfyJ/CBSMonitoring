@@ -11,6 +11,7 @@ namespace CBSMonitoring.Services
     {
         private const int ExpirationMinutes = 30;
         private const int ExpirationDays = 7;
+      
         public string CreateToken(IdentityUser user)
         {
             var expiration = DateTime.UtcNow.AddDays(ExpirationDays);

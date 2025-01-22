@@ -25,12 +25,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _applicationUserService.GetUserRoles();
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize(Roles = UserRoles.Admin)]
@@ -39,12 +34,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _applicationUserService.GetAllUsers();
             
-            if(!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize(Roles = UserRoles.Admin)]
@@ -53,12 +43,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _applicationUserService.ChangeUserStatus(userName);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize(Roles = UserRoles.Admin)]
@@ -67,12 +52,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _applicationUserService.UpdateUserInfo(request);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("UpdateSelfInfo")]
@@ -80,12 +60,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _applicationUserService.UpdateSelfInfo(request);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

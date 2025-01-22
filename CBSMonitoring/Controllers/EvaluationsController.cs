@@ -3,7 +3,9 @@ using CBSMonitoring.DTOs;
 using CBSMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Runtime.CompilerServices;
 using static CBSMonitoring.DTOs.Requests;
 
@@ -27,12 +29,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.GetRankingsOfOrganizationsByIndicator(scoreRequest);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("GetRankingsOfOrganizations")]
@@ -40,52 +37,25 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.GetRankingsOfOrganizations(period);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("GetEvaluationOfIndicator")]
         public async Task<IActionResult> GetEvaluationOfIndicator([FromBody] ScoreRequestByIndicator scoreRequest)
         {
-            var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
-
-            if (!claimResult.Succeeded)
-                return BadRequest(claimResult);
-
-            scoreRequest.OrganizationId = int.Parse(claimResult.Data);
 
             var result = await _rankingService.GetEvaluationOfIndicator(scoreRequest);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("GetScoresOfOrganization")]
         public async Task<IActionResult> GetScoresOfOrganization([FromBody] ScoreRequest scoreRequest)
         {
-            var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
-
-            if (!claimResult.Succeeded)
-                return BadRequest(claimResult);
-
-            scoreRequest.OrganizationId = int.Parse(claimResult.Data);
-
             var result = await _rankingService.GetScoresOfOrganization(scoreRequest);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
+            return StatusCode(result.StatusCode, result);
 
-            return Ok(result);
         }
 
         [HttpPost("Evaluate")]
@@ -97,13 +67,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _rankingService.Evaluate(evaluationRequest);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
-
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("ReEvaluate")]
@@ -114,9 +78,8 @@ namespace CBSMonitoring.Controllers
                 return BadRequest(ModelState);
 
             var result = await _rankingService.ReEvaluate(reEvaluationRequest);
-            if (!result.Succeeded)
-                return BadRequest(result);
-            return Ok(result);
+            
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("RemoveEvaluation/{id}")]
@@ -125,9 +88,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _rankingService.RemoveEvaluation(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         

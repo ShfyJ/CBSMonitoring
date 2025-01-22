@@ -41,10 +41,10 @@ namespace CBSMonitoring.Services
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
         }
 
         public async Task<Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>> GetQuestionBlocksWithIndicators(LevelRequest request)
@@ -53,12 +53,12 @@ namespace CBSMonitoring.Services
             {
 
                 // Get current user's organization id or check if user is authorized for this organization info
-                var orgIdResult = await GetOrganizationId(request.OrganizationId);
+                var orgIdResult = await _applicationUserService.GetOrganizationId(request.OrganizationId);
 
                 if (!orgIdResult.Succeeded)
                 {
                     return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync(
-                    orgIdResult.Code, orgIdResult.Messages);
+                    orgIdResult.StatusCode, orgIdResult.Messages);
                 }
 
                 request.OrganizationId = orgIdResult.Data;
@@ -121,12 +121,13 @@ namespace CBSMonitoring.Services
                     return new MonitoringIndicatorWithQbsResponse(indicator.Id, indicator.Name, questionBlocks);
                 });
 
-                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.SuccessAsync(response);
+                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.SuccessAsync(StatusCodes.Status200OK, response);
             }
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<IEnumerable<MonitoringIndicatorWithQbsResponse>>
+                    .FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
         }
@@ -155,12 +156,13 @@ namespace CBSMonitoring.Services
                 stopWatch.Stop();
                 Console.WriteLine($"time1: {stopWatch.ElapsedMilliseconds} ms");
 
-                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>.SuccessAsync(indicators);
+                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>.SuccessAsync(StatusCodes.Status200OK, indicators);
             }
 
             catch (Exception ex)
             {
-                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<IEnumerable<MonitoringIndicatorWithRawQbsResponse>>
+                    .FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
         public async Task<Result<RawQuestionBlockResponse>> GetQuestionBlock(int questionBlockId)
@@ -168,15 +170,15 @@ namespace CBSMonitoring.Services
             var qb = await _qbRepository.GetByIdAsync<QuestionBlock>(questionBlockId);
 
             if (qb == null)
-                return await Result<RawQuestionBlockResponse>.FailAsync($"Блок вопросов с id={questionBlockId} не найден!");
+                return await Result<RawQuestionBlockResponse>.FailAsync(StatusCodes.Status404NotFound, $"Блок вопросов с id={questionBlockId} не найден!");
 
-            return await Result<RawQuestionBlockResponse>.SuccessAsync(_mapper.Map<RawQuestionBlockResponse>(qb));
+            return await Result<RawQuestionBlockResponse>.SuccessAsync(StatusCodes.Status200OK, _mapper.Map<RawQuestionBlockResponse>(qb));
         }
         public async Task<Result<string>> RemoveQuestionBlock(int questionBlockId)
         {
             var questionBlock = await _qbRepository.GetByIdAsync<QuestionBlock>(questionBlockId);
             if (questionBlock == null)
-                return await Result<string>.FailAsync($"Блок вопросов с id={questionBlockId} не найден!");
+                return await Result<string>.FailAsync(StatusCodes.Status404NotFound, $"Блок вопросов с id={questionBlockId} не найден!");
 
             try
             {
@@ -185,23 +187,23 @@ namespace CBSMonitoring.Services
 
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Неуспешно: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
         }
         public async Task<Result<string>> UpdateQuestionBlock(QuestionBlockRequest questionBlock, int id)
         {
             var qb = await _qbRepository.GetByIdAsync<QuestionBlock>(id);
 
             if (qb == null)
-                return await Result<string>.FailAsync($"Блок вопросов с id={id} не найден!");
+                return await Result<string>.FailAsync(StatusCodes.Status404NotFound, $"Блок вопросов с id={id} не найден!");
 
             _mapper.Map(questionBlock, qb);
 
             await _qbRepository.UpdateAsync(qb);
 
-            return await Result<string>.SuccessAsync($"Успешно!");
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK, $"Успешно!");
         }
         public async Task<Result<StatsForReportCompletionResponse>> GetStatsForReportCompletion(int periodOfQuarters, int organizationId)
         {
@@ -209,31 +211,39 @@ namespace CBSMonitoring.Services
             List<Period> periods = GeneratePeriods(currentPeriod.Year, currentPeriod.Quarter, periodOfQuarters);
 
             // Get current user's organization id or check if user is authorized for this organization info
-            var orgIdResult = await GetOrganizationId(organizationId);
+            var orgIdResult = await _applicationUserService.GetOrganizationId(organizationId);
 
             if (!orgIdResult.Succeeded)
             {
                 return await Result<StatsForReportCompletionResponse>.FailAsync(
-                    orgIdResult.Code, orgIdResult.Messages);
+                    orgIdResult.StatusCode, orgIdResult.Messages);
             }
 
             organizationId = orgIdResult.Data;
 
-            // Fetch organization name by requested organizationId
-            var organizationName = await FetchOrganizationNameAsync(organizationId);
+            try
+            {
+                // Fetch organization name by requested organizationId
+                var organizationName = await FetchOrganizationNameAsync(organizationId);
 
-            // Fetch and group reports
-            var groupedReportSectNumbers = await FetchAndGroupReportsAsync(periods, organizationId);
+                // Fetch and group reports
+                var groupedReportSectNumbers = await FetchAndGroupReportsAsync(periods, organizationId);
 
-            // Fetch question blocks
-            var questionBlocks = await FetchQuestionBlocksAsync();
+                // Fetch question blocks
+                var questionBlocks = await FetchQuestionBlocksAsync();
 
-            // Calculate completions for each period
-            var completions = CalculateCompletions(periods, groupedReportSectNumbers, questionBlocks);
+                // Calculate completions for each period
+                var completions = CalculateCompletions(periods, groupedReportSectNumbers, questionBlocks);
 
-            var response = new StatsForReportCompletionResponse(organizationId, organizationName, completions);
+                var response = new StatsForReportCompletionResponse(organizationId, organizationName, completions);
 
-            return await Result<StatsForReportCompletionResponse>.SuccessAsync(response);
+                return await Result<StatsForReportCompletionResponse>.SuccessAsync(StatusCodes.Status200OK, response);
+            }
+            catch(Exception ex)
+            {
+                return await Result<StatsForReportCompletionResponse>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+            
         }
 
         public async Task<Result<IEnumerable<CompletionForPeriod>>> GetAllInOneStatsForReportCompletion(int periodOfQuarters)
@@ -241,46 +251,31 @@ namespace CBSMonitoring.Services
             var currentPeriod = new Period();
             List<Period> periods = GeneratePeriods(currentPeriod.Year, currentPeriod.Quarter, periodOfQuarters);
 
-            // Fetch and group reports
-            var groupedGroupReportSectNumbers = await FetchAndGroupReportsAsync(periods);
+            try
+            {
+                // Fetch and group reports
+                var groupedGroupReportSectNumbers = await FetchAndGroupReportsAsync(periods);
 
-            // Fetch question blocks
-            var questionBlocks = await FetchQuestionBlocksAsync();
+                // Fetch question blocks
+                var questionBlocks = await FetchQuestionBlocksAsync();
 
-            // Get the number of active organizations
-            var numberOfActiveOrgs = await CountActiveOrganizations();
+                // Get the number of active organizations
+                var numberOfActiveOrgs = await CountActiveOrganizations();
 
-            // Calculate completions for each period
-            var completions = CalculateCompletions(periods, groupedGroupReportSectNumbers, questionBlocks, numberOfActiveOrgs);
+                // Calculate completions for each period
+                var completions = CalculateCompletions(periods, groupedGroupReportSectNumbers, questionBlocks, numberOfActiveOrgs);
 
-            return await Result<IEnumerable<CompletionForPeriod>>.SuccessAsync(completions);
+                return await Result<IEnumerable<CompletionForPeriod>>.SuccessAsync(completions);
+            }
+
+            catch(Exception ex)
+            {
+                return await Result<IEnumerable<CompletionForPeriod>>.FailAsync(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+            
         }
 
         #region private methods
-        private async Task<Result<int>> GetOrganizationId(int organizationId)
-        {
-            if (organizationId != 0 && organizationId > 0)
-            {
-                var isUserAuthorizedResult = await _applicationUserService.IsUserAuthorizedForThisInfo(organizationId);
-
-                if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
-                    return await Result<int>.FailAsync(isUserAuthorizedResult.Messages);
-
-                return await Result<int>.SuccessAsync(organizationId);
-            }
-            var claimResult = await _applicationUserService.GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
-
-            if (!claimResult.Succeeded)
-            {
-                return await Result<int>.FailAsync(claimResult.Messages);
-            }
-
-            organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
-            if (organizationId == 0)
-                return await Result<int>.FailAsync($"Неправильный идентификатор организации: {claimResult.Data}");
-
-            return await Result<int>.SuccessAsync(organizationId);
-        }
 
         // Method to generate periods based on the given criteria
         private static List<Period> GeneratePeriods(int startYear, int startQuarter, int periodOfQuarters)
@@ -308,33 +303,25 @@ namespace CBSMonitoring.Services
         // Method to fetch and group reports asynchronously
         private async Task<Dictionary<Period, List<string>>> FetchAndGroupReportsAsync(List<Period> periods, int organizationId = 0)
         {
-            try
-            {
-                var reportsQuery = organizationId != 0
-                     ? _qbRepository.SelectAllAsync<OrgMonitoring, SelectedReport>(
-                        r => new SelectedReport(r.SectionNumber, new(r.Year, r.QuarterIndex)),
-                        r => periods.Select(p => p.Year).Any(p => p == r.Year) &&
-                             periods.Select(p => p.Quarter).Any(p => p == r.QuarterIndex) &&
-                             r.OrganizationId == organizationId)
 
-                     : _qbRepository.SelectAllAsync<OrgMonitoring, SelectedReport>(
-                        r => new SelectedReport(r.SectionNumber, new(r.Year, r.QuarterIndex)),
-                        r => periods.Select(p => p.Year).Any(p => p == r.Year) &&
-                             periods.Select(p => p.Quarter).Any(p => p == r.QuarterIndex));
+            var reportsQuery = organizationId != 0
+                 ? _qbRepository.SelectAllAsync<OrgMonitoring, SelectedReport>(
+                    r => new SelectedReport(r.SectionNumber, new(r.Year, r.QuarterIndex)),
+                    r => periods.Select(p => p.Year).Any(p => p == r.Year) &&
+                         periods.Select(p => p.Quarter).Any(p => p == r.QuarterIndex) &&
+                         r.OrganizationId == organizationId)
 
-                var reportsResult = await reportsQuery;
+                 : _qbRepository.SelectAllAsync<OrgMonitoring, SelectedReport>(
+                    r => new SelectedReport(r.SectionNumber, new(r.Year, r.QuarterIndex)),
+                    r => periods.Select(p => p.Year).Any(p => p == r.Year) &&
+                         periods.Select(p => p.Quarter).Any(p => p == r.QuarterIndex));
 
-                return reportsResult
-                                .GroupBy(r => r.Period)
-                                .ToDictionary(g => g.Key, g => g.Select(s => s.SectionNumber).ToList());
+            var reportsResult = await reportsQuery;
 
-            }
-            catch (Exception ex)
-            {
-                var mes = ex.Message;
-            }
+            return reportsResult
+                            .GroupBy(r => r.Period)
+                            .ToDictionary(g => g.Key, g => g.Select(s => s.SectionNumber).ToList());
 
-            return new Dictionary<Period, List<string>>();
         }
 
         // Method to fetch question blocks asynchronously

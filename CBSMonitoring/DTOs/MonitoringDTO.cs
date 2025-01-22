@@ -1,6 +1,7 @@
 ﻿using CBSMonitoring.Helpers;
 using CBSMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 using static CBSMonitoring.DTOs.Requests;
 

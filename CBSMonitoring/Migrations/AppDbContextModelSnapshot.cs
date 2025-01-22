@@ -17,7 +17,7 @@ namespace CBSMonitoring.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.9")
+                .HasAnnotation("ProductVersion", "7.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -89,9 +89,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -126,7 +124,6 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Position")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
@@ -151,6 +148,26 @@ namespace CBSMonitoring.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("cbs_users", (string)null);
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.BlacklistedToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Jti")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BlacklistedTokens");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.Evaluation", b =>
@@ -222,6 +239,9 @@ namespace CBSMonitoring.Migrations
                     b.Property<int?>("Form2_2_2Id")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsCatalog")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
@@ -259,9 +279,11 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("ItemLabel")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ItemName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("ItemTypeId")
@@ -306,6 +328,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("TypeDescription")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TypeName")
@@ -347,6 +370,60 @@ namespace CBSMonitoring.Migrations
                         .IsUnique();
 
                     b.ToTable("FormSections");
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsBroadcast")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MessageHeader")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("VisibleForSender")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.MessageRecipient", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("VisibleForRecipient")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("MessageId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MessageRecipient");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.MonitoringIndicator", b =>
@@ -391,6 +468,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("SectionNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Year")
@@ -693,6 +771,7 @@ namespace CBSMonitoring.Migrations
                         .HasColumnType("integer");
 
                     b.Property<bool?>("HasPolicy")
+                        .IsRequired()
                         .HasColumnType("boolean");
 
                     b.HasIndex("File_1_1_1Id")
@@ -1844,6 +1923,34 @@ namespace CBSMonitoring.Migrations
                     b.Navigation("QuestionBlock");
                 });
 
+            modelBuilder.Entity("CBSMonitoring.Models.Message", b =>
+                {
+                    b.HasOne("CBSMonitoring.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.MessageRecipient", b =>
+                {
+                    b.HasOne("CBSMonitoring.Models.Message", "Message")
+                        .WithMany("MessageRecipients")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CBSMonitoring.Models.ApplicationUser", "Recipient")
+                        .WithMany("MessageRecipients")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Recipient");
+                });
+
             modelBuilder.Entity("CBSMonitoring.Models.OrgMonitoring", b =>
                 {
                     b.HasOne("CBSMonitoring.Model.Organization", "Organization")
@@ -2019,6 +2126,11 @@ namespace CBSMonitoring.Migrations
                     b.Navigation("FileModel");
                 });
 
+            modelBuilder.Entity("CBSMonitoring.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("MessageRecipients");
+                });
+
             modelBuilder.Entity("CBSMonitoring.Models.FormItemType", b =>
                 {
                     b.Navigation("FormItems");
@@ -2027,6 +2139,11 @@ namespace CBSMonitoring.Migrations
             modelBuilder.Entity("CBSMonitoring.Models.FormSection", b =>
                 {
                     b.Navigation("FormItems");
+                });
+
+            modelBuilder.Entity("CBSMonitoring.Models.Message", b =>
+                {
+                    b.Navigation("MessageRecipients");
                 });
 
             modelBuilder.Entity("CBSMonitoring.Models.MonitoringIndicator", b =>

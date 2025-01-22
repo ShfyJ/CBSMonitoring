@@ -17,6 +17,7 @@ namespace CBSMonitoring.Models
         public string SystemPath { get; set; }
         public string BasePath { get; set; }
         public string ContentType { get; set; }
+        public bool IsCatalog { get; set; } = false;
         #nullable enable
         public int? Form2_2_2Id { get; set; }
         [ForeignKey(nameof(Form2_2_2Id))]

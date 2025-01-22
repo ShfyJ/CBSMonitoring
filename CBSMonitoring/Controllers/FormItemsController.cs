@@ -24,12 +24,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _formItemService.GetFormItemsByFormSectionId(id);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // GET api/<FormItemController>/5
@@ -39,12 +34,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _formItemService.GetFormItem(id);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // POST api/<FormItemController>
@@ -57,12 +47,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _formItemService.AddFormItem(item);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
 
         }
 
@@ -75,9 +60,7 @@ namespace CBSMonitoring.Controllers
                 return BadRequest(ModelState);
 
             var result = await _formItemService.EditFormItem(item, id);
-            if (!result.Succeeded)
-                return BadRequest(result);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         // DELETE api/<FormItemController>/5
@@ -87,9 +70,7 @@ namespace CBSMonitoring.Controllers
         {
             var result = await _formItemService.DeleteFormItem(id);
 
-            if (!result.Succeeded)
-                return BadRequest(result);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

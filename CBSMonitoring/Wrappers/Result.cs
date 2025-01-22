@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using CBSMonitoring.DTOs;
+using System.Net;
 
 namespace ERPBlazor.Shared.Wrappers
 {
@@ -8,11 +9,18 @@ namespace ERPBlazor.Shared.Wrappers
         {
         }
 
-        public List<string> Messages { get; set; } = new List<string>();
+        public Result(int statusCode, List<ValidationError> validationErrors, bool succeeded, List<string> messages)
+        {
+            StatusCode = statusCode;
+            ValidationErrors = validationErrors;
+            Succeeded = succeeded;
+            Messages = messages;
+        }
 
+        public List<ValidationError> ValidationErrors { get; set; } = new();
+        public List<string> Messages { get; set; } = new();
         public bool Succeeded { get; set; }
-
-        public HttpStatusCode Code { get; set; }
+        public int StatusCode { get; set; }
 
         public static IResult Fail()
         {
@@ -70,75 +78,96 @@ namespace ERPBlazor.Shared.Wrappers
 
         public Result() { }
 
-        public T Data { get; set; }
-
-        public new static Result<T> Fail()
+        public Result(int statusCode, T data, List<ValidationError> validationErrors, bool succeeded, List<string> messages)
         {
-            return new Result<T> { Succeeded = false };
+            StatusCode = statusCode;
+            ValidationErrors = validationErrors;
+            Succeeded = succeeded;
+            Messages = messages;
+            Data = data;
         }
 
-        public new static Result<T> Fail(string message)
+        public T? Data { get; set; }
+
+        public static Result<T> Fail(int statusCode)
         {
-            return new Result<T> { Succeeded = false, Messages = new List<string> { message } };
+            return new Result<T> { Succeeded = false, StatusCode = statusCode };
         }
 
-        public static Result<T> Fail(T data)
+        public static Result<T> Fail(int statusCode, string message)
         {
-            return new Result<T> { Succeeded = false, Data = data };
+            return new Result<T> { Succeeded = false, StatusCode = statusCode, Messages = new List<string> { message } };
         }
 
-        public static Result<T> Fail(HttpStatusCode code)
+        //public static Result<T> Fail(int statusCode, IEnumerable<object> errors, string message)
+        //{
+        //    return new Result<T> { Succeeded = false, StatusCode = statusCode, Errors = errors, Messages = new List<string> { message } };
+        //}
+
+        public static Result<T> Fail(int statusCode, T data)
         {
-            return new Result<T> { Succeeded = false, Code = code};
+            return new Result<T> { Succeeded = false, StatusCode = statusCode, Data = data };
         }
 
-        public static Result<T> Fail(HttpStatusCode code, List<string> messages)
+        public static Result<T> Fail(int statusCode, List<ValidationError> validationErrors, string message)
         {
-            return new Result<T> { Succeeded = false, Code = code, Messages = messages };
+            return new Result<T> { Succeeded = false, StatusCode = statusCode, 
+                ValidationErrors = validationErrors, Messages = new List<string> { message } };
         }
 
-        public new static Result<T> Fail(List<string> messages)
+        public static Result<T> Fail(int statusCode, T data, string message)
         {
-            return new Result<T> { Succeeded = false, Messages = messages };
+            return new Result<T> { Succeeded = false, StatusCode = statusCode, Data = data, Messages = new List<string> { message } };
         }
 
-        public new static Task<Result<T>> FailAsync()
+        public static Result<T > Fail(int statusCode, List<string> messages)
         {
-            return Task.FromResult(Fail());
+            return new Result<T> { Succeeded = false, StatusCode = statusCode, Messages = messages };
         }
 
-        public new static Task<Result<T>> FailAsync(string message)
+        public static Task<Result<T>> FailAsync(int statusCode)
         {
-            return Task.FromResult(Fail(message));
+            return Task.FromResult(Fail(statusCode));
         }
 
-        public new static Task<Result<T>> FailAsync(List<string> messages)
+        public static Task<Result<T>> FailAsync(int statusCode, string message)
         {
-            return Task.FromResult(Fail(messages));
+            return Task.FromResult(Fail(statusCode, message));
         }
 
-        public static Task<Result<T>> FailAsync(T Data)
+        public static Task<Result<T>> FailAsync(int statusCode, T data, string message)
         {
-            return Task.FromResult(Fail(Data));
-        }
-        public static Task<Result<T>> FailAsync(HttpStatusCode code)
-        {
-            return Task.FromResult(Fail(code));
+            return Task.FromResult(Fail(statusCode, data, message));
         }
 
-        public static Task<Result<T>> FailAsync(HttpStatusCode code, List<string> messages)
+        public static Task<Result<T>> FailAsync(int statusCode, List<ValidationError> validationErrors, string message)
         {
-            return Task.FromResult(Fail(code, messages));
+            return Task.FromResult(Fail(statusCode, validationErrors, message));
         }
 
-        public new static Result<T> Success()
+        //public static Task<Result<T>> FailAsync(int statusCode, IEnumerable<object> errors, string message)
+        //{
+        //    return Task.FromResult(Fail(statusCode, errors, message));
+        //}
+
+        public static Task<Result<T>> FailAsync(int statusCode, List<string> messages)
         {
-            return new Result<T> { Succeeded = true };
+            return Task.FromResult(Fail(statusCode, messages));
         }
 
-        public new static Result<T> Success(string message)
+        public static Task<Result<T>> FailAsync(int statusCode, T Data)
         {
-            return new Result<T> { Succeeded = true, Messages = new List<string> { message } };
+            return Task.FromResult(Fail(statusCode, Data));
+        }
+
+        public static Result<T> Success(int statusCode)
+        {
+            return new Result<T> { Succeeded = true, StatusCode = statusCode };
+        }   
+
+        public static Result<T> Success(int statusCode, string message)
+        {
+            return new Result<T> { Succeeded = true, StatusCode = statusCode, Messages = new List<string> { message } };
         }
 
         public static Result<T> Success(T data)
@@ -146,24 +175,24 @@ namespace ERPBlazor.Shared.Wrappers
             return new Result<T> { Succeeded = true, Data = data };
         }
 
-        public static Result<T> Success(T data, string message)
+        public static Result<T> Success(int statusCode, T data)
         {
-            return new Result<T> { Succeeded = true, Data = data, Messages = new List<string> { message } };
+            return new Result<T> { Succeeded = true, StatusCode = statusCode, Data = data };
         }
 
-        public static Result<T> Success(T data, List<string> messages)
+        public static Result<T> Success(int statusCode, T data, string message)
         {
-            return new Result<T> { Succeeded = true, Data = data, Messages = messages };
+            return new Result<T> { Succeeded = true, StatusCode = statusCode, Data = data, Messages = new List<string> { message } };
         }
 
-        public new static Task<Result<T>> SuccessAsync()
+        public static Result<T> Success(int statusCode, T data, List<string> messages)
         {
-            return Task.FromResult(Success());
+            return new Result<T> { Succeeded = true, StatusCode = statusCode, Data = data, Messages = messages };
         }
 
-        public new static Task<Result<T>> SuccessAsync(string message)
+        public static Task<Result<T>> SuccessAsync(int statusCode)
         {
-            return Task.FromResult(Success(message));
+            return Task.FromResult(Success(statusCode));
         }
 
         public static Task<Result<T>> SuccessAsync(T data)
@@ -171,9 +200,19 @@ namespace ERPBlazor.Shared.Wrappers
             return Task.FromResult(Success(data));
         }
 
-        public static Task<Result<T>> SuccessAsync(T data, string message)
+        public static Task<Result<T>> SuccessAsync(int statusCode, string message)
         {
-            return Task.FromResult(Success(data, message));
+            return Task.FromResult(Success(statusCode, message));
+        }
+
+        public static Task<Result<T>> SuccessAsync(int statusCode, T data)
+        {
+            return Task.FromResult(Success(statusCode, data));
+        }
+
+        public static Task<Result<T>> SuccessAsync(int statusCode, T data, string message)
+        {
+            return Task.FromResult(Success(statusCode, data, message));
         }
     }
 }

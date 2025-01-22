@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static CBSMonitoring.DTOs.Requests;
 
 namespace CBSMonitoring.Controllers
 {
@@ -22,9 +23,23 @@ namespace CBSMonitoring.Controllers
             var result = await _fileWorkRoom.GetFileAsStream(id);
 
             if (!result.Succeeded)
-                return BadRequest(result);
+                return StatusCode(result.StatusCode, result);
 
-            return File(result.Data.Memory, result.Data.ContentType, result.Data.FileName);
+            return File(result.Data!.Memory, result.Data.ContentType, result.Data.FileName);
+        }
+
+        [HttpPost("AddCatalogs")]
+        public async Task<IActionResult> AddCatalogs([FromForm]CatalogFile catalog)
+        {
+            var result = await _fileWorkRoom.AddCatalogs(catalog);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("GetCatalogs")]
+        public async Task<IActionResult> GetCatalogs()
+        {
+            var result = await _fileWorkRoom.GetCatalogs();
+            return StatusCode(result.StatusCode, result);
         }
 
     }

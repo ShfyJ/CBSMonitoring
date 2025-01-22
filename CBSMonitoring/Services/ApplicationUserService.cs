@@ -14,6 +14,7 @@ using AutoMapper.Configuration.Annotations;
 using static CBSMonitoring.DTOs.Requests;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using System.Net;
 
 namespace CBSMonitoring.Services
 {
@@ -41,7 +42,7 @@ namespace CBSMonitoring.Services
 
             if (string.IsNullOrEmpty(userRole) || string.IsNullOrEmpty(organizationId))
             {
-                return await Result<bool>.FailAsync("Неуспешно: Проверьте наличие запроса и повторите попытку!");
+                return await Result<bool>.FailAsync(StatusCodes.Status400BadRequest, "Неуспешно: Проверьте наличие запроса и повторите попытку!");
             }
 
             if (userRole == UserRoles.Admin || int.TryParse(organizationId, out var orgId) && orgId == id)
@@ -49,7 +50,7 @@ namespace CBSMonitoring.Services
                 return await Result<bool>.SuccessAsync(true);
             }
             
-            return await Result<bool>.SuccessAsync(false, "У вас нет прав на эту информацию");
+            return await Result<bool>.SuccessAsync(StatusCodes.Status403Forbidden, false, "У вас нет прав на эту информацию");
 
         }
 
@@ -60,16 +61,16 @@ namespace CBSMonitoring.Services
                 {
                     var claimValue = task.Result;
                     return claimValue != null
-                        ? Result<string>.Success(claimValue, "Успешно!")
-                        : Result<string>.Fail("Запрошенная информация недоступна");
+                        ? Result<string>.Success(claimValue)
+                        : Result<string>.Fail(StatusCodes.Status404NotFound, "Запрошенная информация <claim> недоступна!");
                 });
         }
 
-        public async Task<Result<IEnumerable<string?>>> GetUserRoles()
+        public async Task<Result<IEnumerable<string?>?>> GetUserRoles()
         {
             var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
 
-            return await Result<IEnumerable<string?>>.SuccessAsync(roles);
+            return await Result<IEnumerable<string?>?>.SuccessAsync(StatusCodes.Status200OK, roles);
         }
 
         public async Task<Result<IEnumerable<User>>> GetAllUsers()
@@ -84,7 +85,7 @@ namespace CBSMonitoring.Services
             {
                 var roles = await _userManager.GetRolesAsync(u); // Async call
 
-                var user = new User(u.UserName, u.Email, u.IsActive, roles, u.FullName, 
+                var user = new User(u.Id, u.UserName, u.Email, u.IsActive, roles, u.FullName, 
                     u.Organization.FullName, u.OrganizationId, u.Position, u.PhoneNumber);
 
                 usersWithRoles.Add(user);
@@ -93,7 +94,7 @@ namespace CBSMonitoring.Services
             //var task = Task.Delay(5000);
             //task.Wait();
 
-            return await Result<IEnumerable<User>>.SuccessAsync(usersWithRoles);
+            return await Result<IEnumerable<User>>.SuccessAsync(StatusCodes.Status200OK, usersWithRoles);
 
         }
 
@@ -103,13 +104,13 @@ namespace CBSMonitoring.Services
 
             if (currentUserName == null)
             {
-                return await Result<ApplicationUser>.FailAsync($"'{ClaimTypes.Name}' не найдено!");
+                return await Result<ApplicationUser>.FailAsync(StatusCodes.Status404NotFound, $"'{ClaimTypes.Name}' не найдено!");
             }
 
             var user = await _userManager.FindByNameAsync(currentUserName);
             if(user == null)
             {
-                return await Result<ApplicationUser>.FailAsync($"'{currentUserName}' пользователь не найден!");
+                return await Result<ApplicationUser>.FailAsync(StatusCodes.Status404NotFound, $"'{currentUserName}' пользователь не найден!");
             }
             
             return await Result<ApplicationUser>.SuccessAsync(user);
@@ -121,7 +122,8 @@ namespace CBSMonitoring.Services
             
             if (user == null)
             {
-                return await Result<string>.FailAsync($"'{userName}' пользователь не найден!");
+                return await Result<string>.FailAsync(StatusCodes.Status404NotFound, 
+                    $"'{userName}' пользователь не найден!");
             }
 
             if(user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
@@ -139,25 +141,28 @@ namespace CBSMonitoring.Services
             var updateResult = await _userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
-                return await Result<string>.FailAsync($"Неуспешно: {String.Join(", ",updateResult.Errors)}");
-
-            return await Result<string>.SuccessAsync($"Успешно!");
+            {
+                var errors = new List<string>() { "Неуспешно - запрос на изменение не удался!" };
+                errors.Concat(updateResult.Errors.Select(e => e.Description).ToList());
+                return await Result<string>.FailAsync(StatusCodes.Status400BadRequest, errors);
+            }
+                
+            return await Result<string>.SuccessAsync(StatusCodes.Status200OK,$"Успешно изменено!");
         }
 
-        public async Task<Result<List<string?>>> UpdateUserInfo(UserUpdateRequest request)
+        public async Task<Result<List<string>>> UpdateUserInfo(UserUpdateRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 
             if(user == null)
             {
-                return await Result<List<string?>>.FailAsync($"'{request.UserName}' пользователь не найден!");
+                return await Result<List<string>>.FailAsync(StatusCodes.Status404NotFound, $"'{request.UserName}' пользователь не найден!");
             }
 
-            var messages = new List<string?>();
-
+            var messages = new List<string>();
             try
             {
-                if(!request.Roles.IsNullOrEmpty()) 
+                if(request.Roles!=null && request.Roles.Count != 0) 
                 {
                     var currentRoles = await _userManager.GetRolesAsync(user);
                     var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
@@ -168,15 +173,13 @@ namespace CBSMonitoring.Services
                         var addResult = await _userManager.AddToRolesAsync(user, request.Roles!);
                         if (!addResult.Succeeded)
                         {                            
-                            messages.Add($"Не удалось добавить новые роли: {String.Join(". ",addResult.Errors)}");
-                            messages.Add(removeResult.Errors.ToString());
+                            messages.Add($"Не удалось добавить новые роли: {String.Join(", ",request.Roles!)}");
                         }
                     }
 
                     else
                     {
-                        messages.Add($"Не удалось удалить старые роли: {String.Join(". ",removeResult.Errors)}");
-                        messages.Add(removeResult.Errors.ToString());
+                        messages.Add($"Не удалось удалить старые роли: {String.Join(". ",currentRoles)}");
                     }
                     
                 }
@@ -185,12 +188,12 @@ namespace CBSMonitoring.Services
                 await _userManager.UpdateAsync(user);
 
                 messages.Add($"Информация о пользователе обновлена!");
-                return await Result<List<string?>>.SuccessAsync(messages);
+                return await Result<List<string>>.SuccessAsync(StatusCodes.Status200OK, messages);
             }
             catch(Exception ex)
             {
                 messages.Add(ex.Message);
-                return await Result<List<string?>>.FailAsync(messages!);
+                return await Result<List<string>>.FailAsync(StatusCodes.Status500InternalServerError, messages!);
             }
            
         }
@@ -201,21 +204,46 @@ namespace CBSMonitoring.Services
 
             if (!userResult.Succeeded)
             {
-                return await Result<string>.FailAsync($"Невозможно получить текущего пользователя: {String.Join(". ",userResult.Messages)}");
+                return await Result<string>.FailAsync(userResult.StatusCode, userResult.Messages);
             }
 
             try
             {
                 _mapper.Map(request, userResult.Data);
-                await _userManager.UpdateAsync(userResult.Data);
+                await _userManager.UpdateAsync(userResult.Data!);
 
-                return await Result<string>.SuccessAsync($"Успешно!");
+                return await Result<string>.SuccessAsync(StatusCodes.Status200OK, "Успешно обновлено!");
             }
             catch (Exception ex)
             {
-                return await Result<string>.FailAsync($"Не удалось обновить данные пользователя: {ex.Message}");
+                return await Result<string>.FailAsync(StatusCodes.Status500InternalServerError,
+                    $"Не удалось обновить данные пользователя: {ex.Message}");
             }
 
+        }
+        public async Task<Result<int>> GetOrganizationId(int organizationId = 0)
+        {
+            if (organizationId != 0 && organizationId > 0)
+            {
+                var isUserAuthorizedResult = await IsUserAuthorizedForThisInfo(organizationId);
+
+                if (!isUserAuthorizedResult.Succeeded || !isUserAuthorizedResult.Data)
+                    return await Result<int>.FailAsync(isUserAuthorizedResult.StatusCode, isUserAuthorizedResult.Messages);
+
+                return await Result<int>.SuccessAsync(data: organizationId);
+            }
+            var claimResult = await GetCurrentUserClaim(CustomClaimTypes.OrganizationId);
+
+            if (!claimResult.Succeeded)
+            {
+                return await Result<int>.FailAsync(claimResult.StatusCode, claimResult.Messages);
+            }
+
+            organizationId = int.TryParse(claimResult.Data, out var value) ? value : 0;
+            if (organizationId == 0)
+                return await Result<int>.FailAsync(StatusCodes.Status400BadRequest, $"Неправильный идентификатор организации: : {claimResult.Data}");
+
+            return await Result<int>.SuccessAsync(data : organizationId);
         }
     }
 }

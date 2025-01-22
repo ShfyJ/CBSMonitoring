@@ -1,4 +1,6 @@
-﻿namespace CBSMonitoring.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CBSMonitoring.DTOs
 {
     public class Period
     {

@@ -61,10 +61,7 @@ namespace CBSMonitoring.Controllers
 
             var result = await _monitoringFactory.GetQuarterReportByQb(reportRequest);
 
-            if (!result.Succeeded)
-                return BadRequest(result.Messages);
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
         [HttpPost("UpdateReport/{sectionNumber}")]
         public async Task<IActionResult> UpdateReport(string sectionNumber, int monitoringId, [FromForm] MonitoringDto monitoringDto)
@@ -90,39 +87,31 @@ namespace CBSMonitoring.Controllers
         {
             try
             {
-                // => Getting OrgMonitoring child entity type
-                var formType = _formFactory.GetMonitoringForm(sectionNumber, typeCount);
+                // Getting OrgMonitoring child entity type
+                var formTypeResult = await _formFactory.GetMonitoringForm(sectionNumber, typeCount);
 
-                // => Getting IMonitoringFactory.AddMonitoringReport<T> generic method reflection
-                MethodInfo methodInfo = _classType.GetMethod(methodName)!.MakeGenericMethod(formType);
+                if (!formTypeResult.Succeeded)
+                {
+                    return StatusCode(formTypeResult.StatusCode, formTypeResult);
+                }
 
-                //Invoking generic method
+                // Getting IMonitoringFactory.AddMonitoringReport<T> generic method reflection
+                MethodInfo methodInfo = _classType.GetMethod(methodName)!.MakeGenericMethod(formTypeResult.Data!);
+
+                // Invoking generic method
                 var task = (Task)methodInfo.Invoke(_monitoringFactory, args)!;
                 await task.ConfigureAwait(false);
                 var taskProperty = task.GetType().GetProperty("Result");
-                //Getting Result<T> object
+
                 var returnedObject = taskProperty!.GetValue(task)!;
-                var objectProperty = returnedObject.GetType().GetProperty(nameof(Result.Succeeded));
 
-                if (objectProperty is null)
-                {
-                    return BadRequest();
-                }
+                return StatusCode((int)returnedObject.GetType().GetProperty(nameof(Result.StatusCode))!
+                    .GetValue(returnedObject)!, returnedObject);
 
-                if (!Convert.ToBoolean(objectProperty!.GetValue(returnedObject)))
-                {
-                    if (returnedObject.GetType().GetProperty(nameof(Result.Code))!.GetValue(returnedObject)!.Equals(System.Net.HttpStatusCode.Unauthorized))
-                        return Unauthorized(returnedObject);//.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
-
-                    return BadRequest(returnedObject);//.GetType().GetProperty(nameof(Result.Messages))!.GetValue(returnedObject));
-                }
-                    
-                return Ok(returnedObject);
             }
             catch (Exception ex)
             {
-                var Messages = new List<string> {ex.Message};
-                return BadRequest(new Error(Messages));
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

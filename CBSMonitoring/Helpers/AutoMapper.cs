@@ -25,6 +25,43 @@ namespace CBSMonitoring.Helpers
 
             #endregion
 
+            #region Registration
+            CreateMap<RegistrationRequest, RegistrationResponse>();
+            #endregion
+
+            #region Messages
+            CreateMap<MessageRequest, Message>()
+             .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+             //.ForMember(dest => dest.SenderId, opt => opt.MapFrom(src => src.SenderId))
+             .ForMember(dest => dest.MessageRecipients, opt => opt.MapFrom(src =>
+                 src.ReceiverIds.Select(id => new MessageRecipient { UserId = id }).ToList()));
+
+            // Mapping configuration in your AutoMapper profile
+            CreateMap<ApplicationUser, Sender>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FullName));
+            CreateMap<Message, InboxMessage>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))  // Adjust according to actual property paths
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.IsBroadcast, opt => opt.MapFrom(src => src.IsBroadcast))
+                .ForMember(dest => dest.TimeStamp, opt => opt.MapFrom(src => src.Timestamp))
+                .ForMember(dest => dest.IsRead, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    src.MessageRecipients.FirstOrDefault(mr => mr.UserId == (string)context.Items["UserId"])?.IsRead ?? false));
+
+            CreateMap<MessageRecipient, Reciever>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Recipient.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Recipient.FullName))
+                .ForMember(dest => dest.IsRead, opt => opt.MapFrom(opt => opt.IsRead));
+            CreateMap<Message, SentMessage>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.IsBroadcast, opt => opt.MapFrom(src => src.IsBroadcast))
+                .ForMember(dest => dest.TimeStamp, opt => opt.MapFrom(src => src.Timestamp))
+                .ForMember(dest => dest.Recievers, opt => opt.MapFrom(src => src.MessageRecipients)); // Assuming User resolves to a Reciever type
+
+            #endregion
+
             #region Evaluation
             CreateMap<EvaluationRequest, Evaluation>()
                 .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.Period.Year))
@@ -110,6 +147,11 @@ namespace CBSMonitoring.Helpers
             CreateMap<FileModel, FileModel>()
                 .ForMember(dest => dest.FileId, opt => opt.Ignore())
                 .ForMember(dest => dest.Form2_2_2Id, opt => opt.Ignore());
+
+            CreateMap<FileModel, CatalogResponse>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.FileId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
             #endregion
 
             #region Question Block
