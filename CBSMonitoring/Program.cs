@@ -191,7 +191,7 @@ builder.Services
         opt.AddPolicy(name: "CorsPolicy", builder =>
         {
             builder.WithOrigins( "http://192.168.89.163", "https://ib.ung.uz", "http://192.168.88.118:3000", "http://localhost:3000",
-                "http://192.168.95.93:443","http://192.168.89.93", "http://localhost:4990")
+                "http://192.168.95.93:443","http://192.168.89.93", "http://localhost:4990", "http://ibtest.ung.uz", "https://ibtest.ung.uz")
             //builder.AllowAnyOrigin()
             .WithMethods("GET","POST")
             .AllowAnyHeader()
@@ -218,16 +218,16 @@ app.Use(async (context, next) =>
 });
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+//app.UseSwagger();
+//app.UseSwaggerUI();
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("CorsPolicy");

@@ -66,12 +66,14 @@ namespace CBSMonitoring.DTOs
             public string SectionNumber { get; init; }
             public int OrganizationId { get; set; }
             public Period Period { get; init; }
+            public bool IsSent { get; set; }
 
-            public ReportRequest(string sectionNumber, int organizationId, int year, int quarter)
+            public ReportRequest(string sectionNumber, int organizationId, int year, int quarter, bool isSent)
             {
                 SectionNumber = sectionNumber;
                 OrganizationId = organizationId;
                 Period = new Period(year, quarter);
+                IsSent = isSent;
             }
         }
         public record ReportRequestByQb

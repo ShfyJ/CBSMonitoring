@@ -19,6 +19,7 @@ namespace CBSMonitoring.Models
         [Required(ErrorMessage = "Требуется номер раздела")]
         public string SectionNumber { get; set; }
         public DateTime CreatedDateTime { get; set; }
+        public bool IsSent { get; set; } = false;
 
     }
 }

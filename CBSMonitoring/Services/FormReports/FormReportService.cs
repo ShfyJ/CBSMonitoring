@@ -123,6 +123,7 @@ namespace CBSMonitoring.Services.FormReports
 
                 report.CreatedDateTime = DateTime.Now;
                 report.SectionNumber = sectionNumber;
+                report.IsSent = false;
 
                 var validationResults = new List<ValidationResult>();
                 var context = new ValidationContext(report, null, null);
@@ -238,37 +239,37 @@ namespace CBSMonitoring.Services.FormReports
                 OrgMonitoring? report = reportRequest.SectionNumber switch
                 {
                     FormType.Form1_1_1 => await _genericRepository.GetFirstByParameterAsync<Form1_1_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form1_1_2 => await _genericRepository.GetFirstByParameterAsync<Form1_1_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form1_1_3 => await _genericRepository.GetFirstByParameterAsync<Form1_1_3>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_1_1 => await _genericRepository.GetFirstByParameterAsync<Form2_1_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_1_2 => await _genericRepository.GetFirstByParameterAsync<Form2_1_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_2_1 => await _genericRepository.GetFirstByParameterAsync<Form2_2_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_2_2 => await _genericRepository.GetFirstByParameterAsync<Form2_2_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.TimelyExecutionOfPlans).Include(e => e.FileModels)),
                     FormType.Form2_3_1 => await _genericRepository.GetFirstByParameterAsync<Form2_3_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_3_2 => await _genericRepository.GetFirstByParameterAsync<Form2_3_2>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.FileModel)),
                     FormType.Form2_8_1 => await _genericRepository.GetFirstByParameterAsync<Form2_8_1>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization).Include(e => e.QualificationImprovedEmployees)),
                     _ => await _genericRepository.GetFirstByParameterAsync<T>(e => e.Year == reportRequest.Period.Year && e.QuarterIndex == reportRequest.Period.Quarter
-                                                                                                && e.OrganizationId == reportRequest.OrganizationId,
+                                                                                                && e.OrganizationId == reportRequest.OrganizationId && e.IsSent == reportRequest.IsSent,
                                                                                                 query => query.Include(e => e.Organization)),
                 };
 
@@ -588,7 +589,7 @@ namespace CBSMonitoring.Services.FormReports
 
                 foreach (var section in sections)
                 {
-                    var reportResult = await GetReportDto(new ReportRequest(section.SectionNumber, org.OrganizationId, reportRequest.Period.Year, reportRequest.Period.Quarter), blockDto);
+                    var reportResult = await GetReportDto(new ReportRequest(section.SectionNumber, org.OrganizationId, reportRequest.Period.Year, reportRequest.Period.Quarter, true), blockDto);
 
                     if (!reportResult.Item1)
                     {
